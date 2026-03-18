@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Prevent Airtable SDK from being bundled client-side — server-only access
+  serverExternalPackages: ["airtable"],
 };
 
 export default nextConfig;
