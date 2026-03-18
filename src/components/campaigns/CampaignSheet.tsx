@@ -12,31 +12,25 @@ import {
 import {
   getCampaignMessagesAction,
   saveMessagesAction,
+  deleteCampaignAction,
+  broadcastAction,
 } from '@/app/kampanim/actions';
-import {
-  computeSendAt,
-  formatSendPreview,
-  computeHalfHourTime,
-} from '@/lib/timezone-client';
+import { israelDateTimeToUTC, formatSendPreview } from '@/lib/timezone-client';
 
 // ---------------------------------------------------------------------------
-// Types & constants
+// Types
 // ---------------------------------------------------------------------------
 
-type OffsetLabel = 'week_before' | 'day_before' | 'morning' | 'half_hour';
-
-interface SlotDef {
-  key: OffsetLabel;
-  label: string;
-  hasTimePicker: boolean;
+interface SlotState {
+  title: string;
+  date: string;    // YYYY-MM-DD (Israel local)
+  time: string;    // HH:MM (Israel local)
+  content: string;
+  recordId?: string;
+  status?: ScheduledMessage['status'];
 }
 
-const SLOTS: SlotDef[] = [
-  { key: 'week_before', label: 'שבוע לפני', hasTimePicker: false },
-  { key: 'day_before',  label: 'יום לפני',  hasTimePicker: false },
-  { key: 'morning',     label: 'בוקר האירוע', hasTimePicker: true },
-  { key: 'half_hour',  label: 'חצי שעה לפני', hasTimePicker: false },
-];
+const EMPTY_SLOT = (): SlotState => ({ title: '', date: '', time: '09:00', content: '' });
 
 const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
   const h = Math.floor(i / 2).toString().padStart(2, '0');
@@ -44,38 +38,21 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
   return `${h}:${m}`;
 });
 
-const STATUS_BADGE: Record<ScheduledMessage['status'], { label: string; className: string }> = {
+const STATUS_BADGE: Record<string, { label: string; className: string }> = {
   pending: { label: 'ממתין', className: 'bg-yellow-100 text-yellow-800' },
   sending: { label: 'נשלח כעת', className: 'bg-blue-100 text-blue-800' },
   sent:    { label: 'נשלח', className: 'bg-green-100 text-green-800' },
   failed:  { label: 'נכשל', className: 'bg-red-100 text-red-800' },
 };
 
-type SlotContentMap = Record<OffsetLabel, string>;
-type SlotMessageMap = Record<OffsetLabel, ScheduledMessage | null>;
-
-const EMPTY_SLOT_CONTENT: SlotContentMap = {
-  week_before: '',
-  day_before: '',
-  morning: '',
-  half_hour: '',
-};
-
-const EMPTY_SLOT_MESSAGES: SlotMessageMap = {
-  week_before: null,
-  day_before: null,
-  morning: null,
-  half_hour: null,
-};
-
 // ---------------------------------------------------------------------------
-// Utility: format campaign event date for display
+// Helpers
 // ---------------------------------------------------------------------------
+
 function formatEventDate(isoDate: string | undefined): string {
   if (!isoDate) return '';
   try {
-    const d = new Date(isoDate);
-    return d.toLocaleDateString('he-IL', {
+    return new Date(isoDate).toLocaleDateString('he-IL', {
       timeZone: 'Asia/Jerusalem',
       weekday: 'long',
       day: 'numeric',
@@ -90,151 +67,170 @@ function formatEventDate(isoDate: string | undefined): string {
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
+
 export interface CampaignSheetProps {
   campaign: Campaign | null;
   enrollmentCount?: number;
   onClose: () => void;
+  onDelete?: (campaignId: string) => void;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export function CampaignSheet({ campaign, enrollmentCount = 0, onClose }: CampaignSheetProps) {
-  const [loading, setLoading] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
-  const [saveSuccess, setSaveSuccess] = React.useState(false);
-  const [saveError, setSaveError] = React.useState<string | null>(null);
-  const [slotContent, setSlotContent] = React.useState<SlotContentMap>(EMPTY_SLOT_CONTENT);
-  const [morningTime, setMorningTime] = React.useState('09:00');
-  const [slotMessages, setSlotMessages] = React.useState<SlotMessageMap>(EMPTY_SLOT_MESSAGES);
 
-  // Lazy-load messages when campaign changes
+export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete }: CampaignSheetProps) {
+  const [loading, setLoading] = React.useState(false);
+  const [slotSaving, setSlotSaving] = React.useState<boolean[]>([false, false, false, false]);
+  const [slotError, setSlotError] = React.useState<(string | null)[]>([null, null, null, null]);
+  const [slotSuccess, setSlotSuccess] = React.useState<boolean[]>([false, false, false, false]);
+  const [deleting, setDeleting] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+
+  // Broadcast state
+  const [broadcastMessage, setBroadcastMessage] = React.useState('');
+  const [broadcastConfirm, setBroadcastConfirm] = React.useState(false);
+  const [broadcastPending, setBroadcastPending] = React.useState(false);
+  const [broadcastResult, setBroadcastResult] = React.useState<{ sent: number; failed: number } | null>(null);
+  const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
+
+  const [slots, setSlots] = React.useState<SlotState[]>([
+    EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(),
+  ]);
+
+  // Reset broadcast state when campaign changes
+  React.useEffect(() => {
+    setBroadcastMessage('');
+    setBroadcastConfirm(false);
+    setBroadcastPending(false);
+    setBroadcastResult(null);
+    setBroadcastError(null);
+  }, [campaign?.id]);
+
+  // Load saved messages when campaign changes
   React.useEffect(() => {
     if (!campaign) {
-      setSlotContent(EMPTY_SLOT_CONTENT);
-      setSlotMessages(EMPTY_SLOT_MESSAGES);
-      setMorningTime('09:00');
-      setSaveSuccess(false);
-      setSaveError(null);
+      setSlots([EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT()]);
+      setSlotError([null, null, null, null]);
+      setSlotSuccess([false, false, false, false]);
       return;
     }
 
     let cancelled = false;
     setLoading(true);
-    setSaveSuccess(false);
-    setSaveError(null);
+    setSlotError([null, null, null, null]);
+    setSlotSuccess([false, false, false, false]);
 
     getCampaignMessagesAction(campaign.id).then((result) => {
       if (cancelled) return;
       setLoading(false);
-      if ('error' in result) {
-        setSaveError(result.error);
-        return;
-      }
+      if ('error' in result) { setDeleteError(result.error); return; }
 
-      const newContent: SlotContentMap = { ...EMPTY_SLOT_CONTENT };
-      const newMessages: SlotMessageMap = { ...EMPTY_SLOT_MESSAGES };
-      let foundMorningTime = '09:00';
-
+      const next: SlotState[] = [EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT()];
       for (const msg of result.messages) {
-        const label = msg.offset_label;
-        newContent[label] = msg.message_content ?? '';
-        newMessages[label] = msg;
-
-        // Restore morning time from saved send_at (convert UTC back to Jerusalem HH:MM)
-        if (label === 'morning' && msg.send_at) {
-          const d = new Date(msg.send_at);
-          const fmt = new Intl.DateTimeFormat('en-GB', {
-            timeZone: 'Asia/Jerusalem',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          });
-          const parts = fmt.formatToParts(d);
-          const hh = parts.find((p) => p.type === 'hour')?.value ?? '09';
-          const mm = parts.find((p) => p.type === 'minute')?.value ?? '00';
-          foundMorningTime = `${hh}:${mm}`;
-        }
+        const i = msg.slot_index - 1;
+        if (i < 0 || i > 3) continue;
+        next[i] = {
+          title: msg.title ?? '',
+          date: msg.send_date ?? '',
+          time: msg.send_time ?? '09:00',
+          content: msg.message_content ?? '',
+          recordId: msg.id,
+          status: msg.status,
+        };
       }
-
-      setSlotContent(newContent);
-      setSlotMessages(newMessages);
-      setMorningTime(foundMorningTime);
+      setSlots(next);
     });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [campaign?.id]);
 
   // ---------------------------------------------------------------------------
-  // Derived: send preview per slot
+  // Slot updater
   // ---------------------------------------------------------------------------
-  const getSendPreview = React.useCallback(
-    (slotKey: OffsetLabel): string => {
-      if (!campaign?.event_date || !campaign?.event_time) return '';
-      const eventDate = campaign.event_date.slice(0, 10); // YYYY-MM-DD
-      const eventTime = campaign.event_time;
-      try {
-        const utc = computeSendAt(eventDate, eventTime, slotKey, morningTime);
-        return formatSendPreview(utc);
-      } catch {
-        return '';
-      }
-    },
-    [campaign?.event_date, campaign?.event_time, morningTime]
-  );
+  function updateSlot(i: number, patch: Partial<SlotState>) {
+    setSlots((prev) => prev.map((s, idx) => idx === i ? { ...s, ...patch } : s));
+  }
 
   // ---------------------------------------------------------------------------
-  // Save handler
+  // Save single slot
   // ---------------------------------------------------------------------------
-  async function handleSave() {
+  async function handleSaveSlot(i: number) {
     if (!campaign) return;
-    if (!campaign.event_date || !campaign.event_time) {
-      setSaveError('חסר תאריך או שעת האירוע — לא ניתן לחשב זמני שליחה');
+    const slot = slots[i];
+
+    if (slot.content.trim() === '') {
+      setSlotError((prev) => prev.map((e, idx) => idx === i ? 'יש למלא תוכן הודעה.' : e));
+      return;
+    }
+    if (slot.date === '') {
+      setSlotError((prev) => prev.map((e, idx) => idx === i ? 'יש לבחור תאריך שליחה.' : e));
       return;
     }
 
-    setSaving(true);
-    setSaveError(null);
-    setSaveSuccess(false);
+    setSlotSaving((prev) => prev.map((v, idx) => idx === i ? true : v));
+    setSlotError((prev) => prev.map((e, idx) => idx === i ? null : e));
+    setSlotSuccess((prev) => prev.map((v, idx) => idx === i ? false : v));
 
-    const eventDate = campaign.event_date.slice(0, 10);
-    const eventTime = campaign.event_time;
+    const slotData: SlotData = {
+      slot_index: i + 1,
+      recordId: slot.recordId,
+      title: slot.title,
+      message_content: slot.content,
+      send_date: slot.date,
+      send_time: slot.time,
+    };
 
-    const slots: SlotData[] = SLOTS.filter(
-      (s) => slotContent[s.key].trim() !== ''
-    ).map((s) => ({
-      offset_label: s.key,
-      message_content: slotContent[s.key],
-      send_at: computeSendAt(
-        eventDate,
-        eventTime,
-        s.key,
-        s.key === 'morning' ? morningTime : undefined
-      ),
-    }));
-
-    const result = await saveMessagesAction(campaign.id, slots);
-    setSaving(false);
+    const result = await saveMessagesAction(campaign.id, [slotData]);
+    setSlotSaving((prev) => prev.map((v, idx) => idx === i ? false : v));
 
     if ('error' in result) {
-      setSaveError(result.error);
+      setSlotError((prev) => prev.map((e, idx) => idx === i ? result.error : e));
       return;
     }
 
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setSlotSuccess((prev) => prev.map((v, idx) => idx === i ? true : v));
+    setTimeout(() => setSlotSuccess((prev) => prev.map((v, idx) => idx === i ? false : v)), 3000);
 
-    // Reload messages after save
-    const refreshResult = await getCampaignMessagesAction(campaign.id);
-    if (!('error' in refreshResult)) {
-      const newMessages: SlotMessageMap = { ...EMPTY_SLOT_MESSAGES };
-      for (const msg of refreshResult.messages) {
-        newMessages[msg.offset_label] = msg;
-      }
-      setSlotMessages(newMessages);
+    // Store the recordId returned from the save (works for both create and update)
+    const saved = result.savedSlots.find((s) => s.slot_index === i + 1);
+    if (saved) updateSlot(i, { recordId: saved.recordId });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Broadcast
+  // ---------------------------------------------------------------------------
+  async function handleBroadcastConfirm() {
+    if (!campaign) return;
+    setBroadcastPending(true);
+    setBroadcastError(null);
+    setBroadcastResult(null);
+    setBroadcastConfirm(false);
+
+    const result = await broadcastAction(campaign.id, broadcastMessage);
+    setBroadcastPending(false);
+
+    if ('error' in result) {
+      setBroadcastError(result.error);
+      return;
     }
+
+    setBroadcastResult({ sent: result.sent, failed: result.failed });
+    setBroadcastMessage('');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Delete
+  // ---------------------------------------------------------------------------
+  async function handleDelete() {
+    if (!campaign) return;
+    if (!confirm(`למחוק את הקמפיין "${campaign.campaign_name}"? פעולה זו אינה הפיכה.`)) return;
+    setDeleting(true);
+    const result = await deleteCampaignAction(campaign.id);
+    setDeleting(false);
+    if ('error' in result) { setDeleteError(result.error); return; }
+    onDelete?.(campaign.id);
+    onClose();
   }
 
   // ---------------------------------------------------------------------------
@@ -266,96 +262,160 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose }: Campai
             <p className="text-sm text-muted-foreground text-center py-4">טוען הודעות...</p>
           )}
 
-          {!loading && campaign && !campaign.event_time && (
-            <div className="rounded-md bg-yellow-50 border border-yellow-200 p-3 text-sm text-yellow-800">
-              שעת האירוע חסרה — לא ניתן לחשב זמני שליחה. ערכי את הקמפיין והוסיפי שעה.
-            </div>
-          )}
-
-          {!loading && SLOTS.map((slot) => {
-            const msg = slotMessages[slot.key];
-            const preview = getSendPreview(slot.key);
-            const halfHourTime = campaign?.event_time
-              ? computeHalfHourTime(campaign.event_time)
-              : null;
+          {!loading && slots.map((slot, i) => {
+            const preview = slot.date && slot.time
+              ? formatSendPreview(israelDateTimeToUTC(slot.date, slot.time))
+              : '';
 
             return (
-              <div key={slot.key} className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-sm">{slot.label}</h3>
-                  {msg && (
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[msg.status]?.className ?? ''}`}
-                    >
-                      {STATUS_BADGE[msg.status]?.label ?? msg.status}
+              <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+                {/* Slot header */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-muted-foreground">הודעה {i + 1}</span>
+                  {slot.status && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[slot.status]?.className ?? ''}`}>
+                      {STATUS_BADGE[slot.status]?.label ?? slot.status}
                     </span>
                   )}
                 </div>
 
-                {/* Time picker for morning slot */}
-                {slot.key === 'morning' && (
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs text-muted-foreground">שעת שליחה:</label>
-                    <select
-                      value={morningTime}
-                      onChange={(e) => setMorningTime(e.target.value)}
-                      className="text-sm border rounded px-2 py-1 bg-background"
-                      disabled={msg?.status === 'sent' || msg?.status === 'sending'}
-                    >
-                      {TIME_OPTIONS.map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
+                {/* Title */}
+                <input
+                  type="text"
+                  dir="rtl"
+                  placeholder="כותרת (למשל: הזמנה ראשונית)"
+                  value={slot.title}
+                  onChange={(e) => updateSlot(i, { title: e.target.value })}
+                  className="w-full rounded-md border px-3 py-1.5 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+
+                {/* Date + Time row */}
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="date"
+                    value={slot.date}
+                    dir="ltr"
+                    onChange={(e) => updateSlot(i, { date: e.target.value })}
+                    className="flex-1 rounded-md border px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <select
+                    value={slot.time}
+                    onChange={(e) => updateSlot(i, { time: e.target.value })}
+                    className="rounded-md border px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    {TIME_OPTIONS.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Send preview */}
+                {preview && (
+                  <p className="text-xs text-muted-foreground">{preview}</p>
                 )}
 
-                {/* Read-only computed time for half_hour slot */}
-                {slot.key === 'half_hour' && halfHourTime && (
-                  <p className="text-xs text-muted-foreground">
-                    זמן: {halfHourTime} (30 דקות לפני האירוע)
-                  </p>
-                )}
-
+                {/* Message content */}
                 <textarea
                   rows={3}
                   dir="rtl"
                   placeholder="תוכן ההודעה..."
-                  value={slotContent[slot.key]}
-                  onChange={(e) =>
-                    setSlotContent((prev) => ({ ...prev, [slot.key]: e.target.value }))
-                  }
-                  disabled={msg?.status === 'sent' || msg?.status === 'sending'}
-                  className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+                  value={slot.content}
+                  onChange={(e) => updateSlot(i, { content: e.target.value })}
+                  className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
 
-                {preview && (
-                  <p className="text-xs text-muted-foreground">{preview}</p>
+                {/* Per-slot feedback */}
+                {slotError[i] && (
+                  <p className="text-xs text-red-600">{slotError[i]}</p>
                 )}
+                {slotSuccess[i] && (
+                  <p className="text-xs text-green-600">✓ נשמר</p>
+                )}
+
+                {/* Per-slot save button */}
+                <button
+                  onClick={() => handleSaveSlot(i)}
+                  disabled={slotSaving[i] || loading}
+                  className="self-end rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {slotSaving[i] ? 'שומר...' : 'שמור הודעה'}
+                </button>
               </div>
             );
           })}
+        </div>
 
-          {/* Save feedback */}
-          {saveError && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-800">
-              {saveError}
+        {/* Broadcast section */}
+        <div className="border-t pt-4 px-4 pb-2 flex flex-col gap-3">
+          <h3 className="text-sm font-semibold">שליחת broadcast</h3>
+
+          <textarea
+            rows={3}
+            dir="rtl"
+            placeholder="הקלידי את תוכן ההודעה..."
+            value={broadcastMessage}
+            onChange={(e) => {
+              setBroadcastMessage(e.target.value);
+              setBroadcastResult(null);
+              setBroadcastError(null);
+            }}
+            disabled={broadcastPending}
+            className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+          />
+
+          {!broadcastConfirm ? (
+            <button
+              onClick={() => setBroadcastConfirm(true)}
+              disabled={!broadcastMessage.trim() || broadcastPending}
+              className="self-end rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {broadcastPending ? 'שולח...' : 'שלח לכל הנרשמות'}
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
+              <p className="text-sm font-medium text-amber-800">שלח לכל הנרשמות?</p>
+              <p className="text-xs text-amber-700">ההודעה תישלח ל-{enrollmentCount} נרשמות. לא ניתן לבטל לאחר השליחה.</p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setBroadcastConfirm(false)}
+                  className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-background"
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={handleBroadcastConfirm}
+                  className="rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90"
+                >
+                  אישור — שלח
+                </button>
+              </div>
             </div>
           )}
-          {saveSuccess && (
-            <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-              נשמר בהצלחה
-            </div>
+
+          {broadcastResult && (
+            <p className="text-sm text-green-700">
+              נשלחו {broadcastResult.sent} הודעות בהצלחה{broadcastResult.failed > 0 ? `, ${broadcastResult.failed} נכשלו` : ''}
+            </p>
+          )}
+
+          {broadcastError && (
+            <p className="text-sm text-red-600">{broadcastError}</p>
           )}
         </div>
 
-        {/* Footer: save button */}
-        <div className="sticky bottom-0 border-t bg-background p-4">
+        {/* Sticky footer */}
+        <div className="sticky bottom-0 border-t bg-background p-4 flex flex-col gap-2">
+          {deleteError && (
+            <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">
+              {deleteError}
+            </div>
+          )}
           <button
-            onClick={handleSave}
-            disabled={saving || loading || !campaign}
-            className="w-full rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleDelete}
+            disabled={deleting || slotSaving.some(Boolean)}
+            className="w-full rounded-md border border-red-200 text-red-600 px-4 py-2 text-sm font-medium hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'שומר...' : 'שמור הודעות'}
+            {deleting ? 'מוחק...' : 'מחק קמפיין'}
           </button>
         </div>
       </SheetContent>
