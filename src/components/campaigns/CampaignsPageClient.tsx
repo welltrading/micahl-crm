@@ -6,6 +6,7 @@ import type { Campaign } from '@/lib/airtable/types';
 import { Button } from '@/components/ui/button';
 import { CampaignCard } from './CampaignCard';
 import { CreateCampaignModal } from './CreateCampaignModal';
+import { CampaignSheet } from './CampaignSheet';
 
 interface CampaignsPageClientProps {
   campaigns: Campaign[];
@@ -53,8 +54,12 @@ export function CampaignsPageClient({ campaigns, enrollmentCounts }: CampaignsPa
         }}
       />
 
-      {/* CampaignSheet placeholder — Plan 04 will fill this in */}
-      {selectedCampaign !== null ? null : null}
+      {/* CampaignSheet: slides in from right when a campaign is selected */}
+      <CampaignSheet
+        campaign={selectedCampaign}
+        enrollmentCount={selectedCampaign ? (enrollmentCounts[selectedCampaign.id] ?? 0) : 0}
+        onClose={() => setSelectedCampaign(null)}
+      />
     </div>
   );
 }
