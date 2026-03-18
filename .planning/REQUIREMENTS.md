@@ -17,7 +17,7 @@
 - [x] **INFRA-01**: Airtable base עם schema מלא — Campaigns, Contacts, Messages, MessageLog
 - [x] **INFRA-02**: Next.js app מוגדר על Railway עם Bree scheduler פועל כתהליך מתמשך
 - [x] **INFRA-03**: שכבת שירות (service layer) לכל גישה ל-Airtable — server-side בלבד
-- [ ] **INFRA-04**: Webhook endpoint שמאפשר ל-MAKE.com להוסיף נרשמת חדשה למערכת
+- [x] **INFRA-04**: Webhook endpoint שמאפשר ל-MAKE.com להוסיף נרשמת חדשה למערכת
 - [ ] **INFRA-05**: ניתן לראות סטטוס חיבור GREEN API בדאשבורד (מחובר / מנותק)
 
 ### Contacts — ניהול אנשי קשר
@@ -89,7 +89,7 @@
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
-| INFRA-04 | Phase 2 | Pending |
+| INFRA-04 | Phase 2 | Complete |
 | INFRA-05 | Phase 4 | Pending |
 | CONT-01 | Phase 2 | Pending |
 | CONT-02 | Phase 2 | Pending |
