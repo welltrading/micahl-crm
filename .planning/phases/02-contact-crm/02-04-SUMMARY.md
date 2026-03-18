@@ -99,9 +99,10 @@ None.
 None — no external service configuration required.
 
 ## Next Phase Readiness
-- Contact detail panel complete (CONT-02 delivered)
+- Contact detail panel complete (CONT-02 delivered) — human visual verification passed
+- Panel slides in on row click; lazy load confirmed via Network tab (no calls on page load)
 - Panel shows campaign ID headers — Phase 3 campaign lookup will enrich this with campaign names
-- Checkpoint awaiting human visual verification (lazy load via Network tab, panel open/close behavior)
+- Airtable Free plan (1,000 calls/month) may need upgrading before Phase 4 goes live
 
 ---
 *Phase: 02-contact-crm*
