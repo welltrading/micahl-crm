@@ -1,13 +1,17 @@
 'use server';
 
-import { createCampaign } from '@/lib/airtable/campaigns';
+import { createCampaign, deleteCampaign } from '@/lib/airtable/campaigns';
 import {
   getScheduledMessagesByCampaign,
-  upsertScheduledMessages,
+  createScheduledMessage,
   updateScheduledMessage,
   type SlotData,
 } from '@/lib/airtable/scheduled-messages';
 import type { Campaign, ScheduledMessage } from '@/lib/airtable/types';
+import { getEnrollmentsForCampaign } from '@/lib/airtable/scheduler-services';
+import { getContactById } from '@/lib/airtable/contacts';
+import { sendWhatsAppMessage } from '@/lib/airtable/green-api';
+import { normalizePhone } from '@/lib/airtable/phone';
 
 export async function createCampaignAction(
   formData: FormData
@@ -60,19 +64,48 @@ export async function getCampaignMessagesAction(
 export async function saveMessagesAction(
   campaignId: string,
   slots: SlotData[]
-): Promise<{ ok: true } | { error: string }> {
+): Promise<{ ok: true; savedSlots: Array<{ slot_index: number; recordId: string }> } | { error: string }> {
   try {
-    if (!campaignId) {
-      return { error: 'campaignId is required' };
+    if (!campaignId) return { error: 'campaignId is required' };
+    if (!Array.isArray(slots)) return { error: 'slots must be an array' };
+
+    const savedSlots: Array<{ slot_index: number; recordId: string }> = [];
+
+    for (const slot of slots) {
+      if (!slot.message_content.trim()) continue;
+      const fields = {
+        title: slot.title,
+        message_content: slot.message_content,
+        send_date: slot.send_date,
+        send_time: slot.send_time,
+      };
+      if (slot.recordId) {
+        await updateScheduledMessage(slot.recordId, fields);
+        savedSlots.push({ slot_index: slot.slot_index, recordId: slot.recordId });
+      } else {
+        const newId = await createScheduledMessage(campaignId, slot);
+        savedSlots.push({ slot_index: slot.slot_index, recordId: newId });
+      }
     }
-    if (!Array.isArray(slots)) {
-      return { error: 'slots must be an array' };
-    }
-    await upsertScheduledMessages(campaignId, slots);
-    return { ok: true };
+
+    return { ok: true, savedSlots };
   } catch (err) {
     console.error('saveMessagesAction error:', err);
-    return { error: 'שגיאה בשמירת ההודעות. נסי שנית.' };
+    const msg = err instanceof Error ? err.message : String(err);
+    return { error: `שגיאה: ${msg}` };
+  }
+}
+
+export async function deleteCampaignAction(
+  campaignId: string
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    if (!campaignId) return { error: 'campaignId is required' };
+    await deleteCampaign(campaignId);
+    return { ok: true };
+  } catch (err) {
+    console.error('deleteCampaignAction error:', err);
+    return { error: 'שגיאה במחיקת הקמפיין. נסה שנית.' };
   }
 }
 
@@ -92,10 +125,45 @@ export async function updateMessageTimeAction(
     if (isNaN(parsed.getTime())) {
       return { error: 'send_at must be a valid ISO date string' };
     }
-    await updateScheduledMessage(recordId, { send_at });
+    await updateScheduledMessage(recordId, { send_time: send_at });
     return { ok: true };
   } catch (err) {
     console.error('updateMessageTimeAction error:', err);
     return { error: 'שגיאה בעדכון זמן ההודעה. נסי שנית.' };
+  }
+}
+
+export async function broadcastAction(
+  campaignId: string,
+  messageContent: string,
+): Promise<{ ok: true; sent: number; failed: number } | { error: string }> {
+  if (!campaignId) return { error: 'campaignId is required' };
+  if (!messageContent.trim()) return { error: 'messageContent is required' };
+
+  try {
+    const enrollments = await getEnrollmentsForCampaign(campaignId);
+    let sent = 0;
+    let failed = 0;
+
+    for (const enrollment of enrollments) {
+      const contact = await getContactById(enrollment.contact_id[0]);
+      if (!contact) { failed++; continue; }
+
+      try {
+        const chatId = normalizePhone(contact.phone) + '@c.us';
+        await sendWhatsAppMessage(chatId, messageContent);
+        sent++;
+      } catch {
+        failed++;
+      }
+
+      // GREEN API minimum 500ms delay; use 1000ms for safety
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    return { ok: true, sent, failed };
+  } catch (err) {
+    console.error('broadcastAction error:', err);
+    return { error: 'שגיאה בשליחת ה-broadcast. נסי שנית.' };
   }
 }
