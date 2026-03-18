@@ -1,0 +1,118 @@
+# Requirements: מיכל CRM — WhatsApp Campaign Manager
+
+**Defined:** 2026-03-17
+**Core Value:** מיכל יוצרת קמפיין לאירוע חדש בדקות — מגדירה תאריך ותוכן, והמערכת שולחת את כל הודעות הווצאפ בזמן הנכון לכל הנרשמות.
+
+## v1 Requirements
+
+### UX — עצמאות תפעולית
+
+- [ ] **UX-01**: כל פעולה שגרתית (יצירת קמפיין, הגדרת הודעות, הוספת נרשמת) מתבצעת דרך ממשק ויזואלי ברור — ללא עריכת קוד, ללא גישה ל-Airtable ישירות
+- [ ] **UX-02**: הגדרת זמני שליחה (שבוע לפני / יום לפני / בוקר / חצי שעה לפני) מתבצעת בבחירה ויזואלית — לא בכתיבת תאריכים ידנית
+- [ ] **UX-03**: בעת הקמת אינטגרציה חדשה (GREEN API, MAKE.com webhook) המערכת מספקת הנחיות step-by-step בתוך הדאשבורד
+- [ ] **UX-04**: שגיאות ובעיות (הודעה שנכשלה, GREEN API מנותק) מוסברות בשפה פשוטה עם פעולה מוצעת — לא קודי שגיאה טכניים
+
+### Infrastructure (תשתית)
+
+- [ ] **INFRA-01**: Airtable base עם schema מלא — Campaigns, Contacts, Messages, MessageLog
+- [ ] **INFRA-02**: Next.js app מוגדר על Railway עם Bree scheduler פועל כתהליך מתמשך
+- [ ] **INFRA-03**: שכבת שירות (service layer) לכל גישה ל-Airtable — server-side בלבד
+- [ ] **INFRA-04**: Webhook endpoint שמאפשר ל-MAKE.com להוסיף נרשמת חדשה למערכת
+- [ ] **INFRA-05**: ניתן לראות סטטוס חיבור GREEN API בדאשבורד (מחובר / מנותק)
+
+### Contacts — ניהול אנשי קשר
+
+- [ ] **CONT-01**: מיכל יכולה לראות רשימת כל אנשי הקשר (שם, טלפון, תאריך הצטרפות, קמפיין)
+- [ ] **CONT-02**: מיכל יכולה לראות לכל איש קשר אילו הודעות קיבל
+- [ ] **CONT-03**: מיכל יכולה לראות סטטיסטיקות בסיסיות — כמה נרשמו בחודש, סך הכל
+
+### Campaigns — ניהול קמפיינים
+
+- [ ] **CAMP-01**: מיכל יכולה ליצור קמפיין עם שם, תאריך אירוע, שעה, ותיאור
+- [ ] **CAMP-02**: לכל קמפיין ניתן להגדיר עד 4 הודעות עם תוכן + מתי לשלוח (שבוע לפני / יום לפני / בוקר האירוע / חצי שעה לפני)
+- [ ] **CAMP-03**: בעת יצירת קמפיין המערכת מחשבת אוטומטית את ה-send_at המדויק (UTC) לכל הודעה
+- [ ] **CAMP-04**: מיכל יכולה לראות רשימת כל הקמפיינים עם סטטוס (עתידי / פעיל / הסתיים)
+- [ ] **CAMP-05**: מיכל יכולה לראות כמה נרשמות יש לכל קמפיין
+- [ ] **CAMP-06**: מיכל יכולה לשנות את זמן השליחה של הודעה ממתינה (טרם נשלחה) — המערכת מחשבת מחדש את ה-send_at ומעדכנת ב-Airtable
+
+### Messaging — שליחת הודעות
+
+- [ ] **MSG-01**: Bree scheduler מפעיל כל דקה בדיקה לשליחות ממתינות ושולח דרך GREEN API
+- [ ] **MSG-02**: מנגנון idempotency — הודעה עם סטטוס pending→sending→sent/failed מונע שליחה כפולה
+- [ ] **MSG-03**: מספרי טלפון מנורמלים אוטומטית לפורמט `972XXXXXXXXXX@c.us` לפני שליחה
+- [ ] **MSG-04**: מיכל יכולה לשלוח broadcast — הודעה חד-פעמית לכל הנרשמות לקמפיין
+
+### Monitoring — מעקב
+
+- [ ] **MON-01**: מיכל יכולה לראות לוג שליחות — כל הודעה שנשלחה/נכשלה עם timestamp
+- [ ] **MON-02**: מיכל יכולה לראות מי לא קיבלה הודעה (נכשלה) לכל קמפיין
+- [ ] **MON-03**: סטטוס חיבור GREEN API מוצג בדאשבורד (health check לפני כל batch)
+
+## v2 Requirements
+
+### Contacts
+
+- **CONT-V2-01**: יבוא CSV ידני מרב מסר (הוספת קבוצה גדולה בבת אחת)
+- **CONT-V2-02**: הודעת "ברוכה הבאה" אוטומטית לנרשמת חדשה
+- **CONT-V2-03**: פרסונליזציה בסיסית — שם הלקוחה בהודעה (`{{שם}}`)
+
+### Campaigns
+
+- **CAMP-V2-01**: עריכת תאריך קמפיין קיים (עם חישוב מחדש של כל הזמנים)
+- **CAMP-V2-02**: שכפול קמפיין קיים לאירוע חדש
+
+### Monitoring
+
+- **MON-V2-01**: סטטוס נקרא/התקבל מ-GREEN API webhooks (נוכחית רק sent/failed)
+- **MON-V2-02**: גרף צמיחה חודשי
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| הודעות מותאמות אישית לכל לקוחה (v1) | כולן מקבלות אותו תוכן — לא מורכב v1 |
+| שיחות / inbox דו-כיווני | מוצר שונה לחלוטין |
+| ניהול תשלומים | לא חלק מהמשפך |
+| אפליקציית מובייל | Web responsive מספיק |
+| ניהול רשימות ברב מסר | רק webhook קבלה, לא ניהול |
+| Vercel deployment | חייב persistent process ל-Bree — Railway בלבד |
+| Google Sheets / MAKE.com שמירת נתונים | Airtable מחליף — MAKE.com רק שולח webhook |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| UX-01 | Phase 2 | Pending |
+| UX-02 | Phase 3 | Pending |
+| UX-03 | Phase 1 | Pending |
+| UX-04 | Phase 5 | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 2 | Pending |
+| INFRA-05 | Phase 4 | Pending |
+| CONT-01 | Phase 2 | Pending |
+| CONT-02 | Phase 2 | Pending |
+| CONT-03 | Phase 2 | Pending |
+| CAMP-01 | Phase 3 | Pending |
+| CAMP-02 | Phase 3 | Pending |
+| CAMP-03 | Phase 3 | Pending |
+| CAMP-04 | Phase 3 | Pending |
+| CAMP-05 | Phase 3 | Pending |
+| CAMP-06 | Phase 3 | Pending |
+| MSG-01 | Phase 4 | Pending |
+| MSG-02 | Phase 4 | Pending |
+| MSG-03 | Phase 4 | Pending |
+| MSG-04 | Phase 4 | Pending |
+| MON-01 | Phase 5 | Pending |
+| MON-02 | Phase 5 | Pending |
+| MON-03 | Phase 5 | Pending |
+
+**Coverage:**
+- v1 requirements: 25 total
+- Mapped to phases: 25
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-03-17*
+*Last updated: 2026-03-17 — traceability mapped by gsd-roadmapper*
