@@ -40,7 +40,7 @@
 - [x] **MSG-01**: Bree scheduler מפעיל כל דקה בדיקה לשליחות ממתינות ושולח דרך GREEN API
 - [x] **MSG-02**: מנגנון idempotency — הודעה עם סטטוס pending→sending→sent/failed מונע שליחה כפולה
 - [x] **MSG-03**: מספרי טלפון מנורמלים אוטומטית לפורמט `972XXXXXXXXXX@c.us` לפני שליחה
-- [ ] **MSG-04**: מיכל יכולה לשלוח broadcast — הודעה חד-פעמית לכל הנרשמות לקמפיין
+- [x] **MSG-04**: מיכל יכולה לשלוח broadcast — הודעה חד-פעמית לכל הנרשמות לקמפיין
 
 ### Monitoring — מעקב
 
@@ -103,7 +103,7 @@
 | MSG-01 | Phase 4 | Complete |
 | MSG-02 | Phase 4 | Complete |
 | MSG-03 | Phase 4 | Complete |
-| MSG-04 | Phase 4 | Pending |
+| MSG-04 | Phase 4 | Complete |
 | MON-01 | Phase 5 | Pending |
 | MON-02 | Phase 5 | Pending |
 | MON-03 | Phase 5 | Pending |
