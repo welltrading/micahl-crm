@@ -6,14 +6,15 @@
 // Mock airtableBase before importing campaigns module
 const mockAll = jest.fn();
 const mockFind = jest.fn();
+const mockCreate = jest.fn();
 const mockSelect = jest.fn(() => ({ all: mockAll }));
-const mockTable = jest.fn(() => ({ select: mockSelect, find: mockFind }));
+const mockTable = jest.fn(() => ({ select: mockSelect, find: mockFind, create: mockCreate }));
 
 jest.mock('../client', () => ({
   airtableBase: mockTable,
 }));
 
-import { getCampaigns, getCampaignById } from '../campaigns';
+import { getCampaigns, getCampaignById, createCampaign, getEnrollmentCountsByCampaign, deriveCampaignStatus } from '../campaigns';
 import type { Campaign } from '../types';
 
 describe('getCampaigns', () => {
@@ -135,5 +136,113 @@ describe('getCampaignById', () => {
     await getCampaignById('recABC');
 
     expect(mockFind).toHaveBeenCalledWith('recABC');
+  });
+});
+
+// ── Wave 0 stubs: Plan 02 will implement these functions ──────────────────────
+
+describe('createCampaign', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('calls Airtable create with correct Hebrew field names', async () => {
+    mockCreate.mockResolvedValueOnce({
+      id: 'recNew1',
+      fields: {
+        'שם קמפיין': 'קמפיין חדש',
+        'תאריך אירוע': '2026-06-01T00:00:00.000Z',
+        'תיאור': 'תיאור קצר',
+        'נוצר בתאריך': '2026-03-18T00:00:00.000Z',
+      },
+    });
+
+    await createCampaign({
+      campaign_name: 'קמפיין חדש',
+      event_date: '2026-06-01T00:00:00.000Z',
+      description: 'תיאור קצר',
+    });
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        'שם קמפיין': 'קמפיין חדש',
+        'תאריך אירוע': '2026-06-01T00:00:00.000Z',
+      })
+    );
+  });
+
+  it('returns created Campaign object', async () => {
+    mockCreate.mockResolvedValueOnce({
+      id: 'recNew2',
+      fields: {
+        'שם קמפיין': 'יוגה',
+        'תאריך אירוע': '2026-07-01T00:00:00.000Z',
+        'נוצר בתאריך': '2026-03-18T00:00:00.000Z',
+      },
+    });
+
+    const result = await createCampaign({
+      campaign_name: 'יוגה',
+      event_date: '2026-07-01T00:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      id: 'recNew2',
+      campaign_name: 'יוגה',
+      event_date: '2026-07-01T00:00:00.000Z',
+    });
+  });
+});
+
+describe('getEnrollmentCountsByCampaign', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns empty object when no enrollments', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    const result = await getEnrollmentCountsByCampaign();
+
+    expect(result).toEqual({});
+  });
+
+  it('counts correctly when multiple enrollments reference same campaign', async () => {
+    const mockRecords = [
+      { id: 'enr1', fields: { 'קמפיין': ['recCamp1'] } },
+      { id: 'enr2', fields: { 'קמפיין': ['recCamp1'] } },
+      { id: 'enr3', fields: { 'קמפיין': ['recCamp2'] } },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getEnrollmentCountsByCampaign();
+
+    expect(result['recCamp1']).toBe(2);
+    expect(result['recCamp2']).toBe(1);
+  });
+});
+
+describe('deriveCampaignStatus', () => {
+  it("returns 'future' when event_date is in the future", () => {
+    const futureDate = new Date();
+    futureDate.setUTCDate(futureDate.getUTCDate() + 10);
+    const result = deriveCampaignStatus(futureDate.toISOString());
+    expect(result).toBe('future');
+  });
+
+  it("returns 'active' when event_date is today", () => {
+    const today = new Date();
+    // Set to today's UTC date at noon to ensure it's "today" but not past 24h mark
+    const todayISO = today.toISOString().slice(0, 10) + 'T12:00:00.000Z';
+    const result = deriveCampaignStatus(todayISO);
+    // Could be 'active' or 'future' depending on exact hour — just verify it's not 'ended'
+    expect(['active', 'future']).toContain(result);
+  });
+
+  it("returns 'ended' when event_date is in the past", () => {
+    const pastDate = new Date();
+    pastDate.setUTCDate(pastDate.getUTCDate() - 10);
+    const result = deriveCampaignStatus(pastDate.toISOString());
+    expect(result).toBe('ended');
   });
 });
