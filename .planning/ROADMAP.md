@@ -50,7 +50,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Phone utility (normalizePhone/formatPhoneDisplay) + Airtable service extensions (createContact, getContactEnrollments, getContactMessages) — TDD
+- [x] 02-01-PLAN.md — Phone utility (normalizePhone/formatPhoneDisplay) + Airtable service extensions (createContact, getContactEnrollments, getContactMessages) — TDD
 - [ ] 02-02-PLAN.md — MAKE.com webhook route handler with auth, validation, phone normalization
 - [ ] 02-03-PLAN.md — Contacts page: RTL table, stat cards, search, add-contact modal + Server Action
 - [ ] 02-04-PLAN.md — Contact detail slide panel with on-demand campaign-grouped message history
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-18 |
-| 2. Contact CRM | 0/4 | Not started | - |
+| 2. Contact CRM | 1/4 | In progress | - |
 | 3. Campaign Management | 0/TBD | Not started | - |
 | 4. Scheduler Engine | 0/TBD | Not started | - |
 | 5. Monitoring + Error UX | 0/TBD | Not started | - |
