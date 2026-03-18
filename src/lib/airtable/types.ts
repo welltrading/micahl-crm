@@ -2,9 +2,11 @@ export interface Campaign {
   id: string;
   campaign_name: string;
   event_date: string; // ISO8601 UTC
+  event_time?: string; // HH:MM format, Israel local time (e.g. "19:00")
   description?: string;
   status: 'future' | 'active' | 'ended';
   created_at: string;
+  enrollment_count?: number;
 }
 
 export interface Contact {

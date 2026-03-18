@@ -62,7 +62,7 @@ export async function updateScheduledMessage(
   recordId: string,
   fields: { message_content?: string; send_at?: string }
 ): Promise<void> {
-  const update: Record<string, unknown> = {};
+  const update: Record<string, string> = {};
   if (fields.message_content !== undefined) update['תוכן ההודעה'] = fields.message_content;
   if (fields.send_at !== undefined) update['שליחה בשעה'] = fields.send_at;
   await airtableBase('ScheduledMessages').update(recordId, update);
