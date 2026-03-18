@@ -65,7 +65,13 @@ Plans:
   3. לאחר שמירת הקמפיין, ב-Airtable מופיעות 4 רשומות ScheduledMessages עם send_at ב-UTC — מדויקות גם אם האירוע בחציית שינוי שעון
   4. מיכל יכולה לשנות זמן שליחה של הודעה ממתינה — send_at מתעדכן מיד ב-Airtable
   5. מסך קמפיינים מציג רשימה עם סטטוס (עתידי / פעיל / הסתיים) וכמות נרשמות לכל קמפיין
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Test scaffolds (timezone, scheduled-messages, campaigns extensions) + timezone.ts TDD
+- [ ] 03-02-PLAN.md — Airtable service layer: campaigns.ts extensions + scheduled-messages.ts TDD
+- [ ] 03-03-PLAN.md — Campaigns list page: card grid, create modal, Server Action
+- [ ] 03-04-PLAN.md — CampaignSheet: 4 message slots, live send preview, save/edit flow
 
 ### Phase 4: Scheduler Engine
 **Goal**: הודעות מתוזמנות נשלחות בזמן דרך GREEN API — הלולאה אידמפוטנטית, אי-אפשר לשלוח הודעה פעמיים, ומיכל יכולה לשלוח broadcast ידני
@@ -96,7 +102,7 @@ Plans:
 **Requirements**: CONT-03
 **Success Criteria** (what must be TRUE):
   1. מסך CRM מציג גרף או טבלה של הצטרפויות לפי חודש — מיכל רואה מגמה
-  2. כל מסך בדאשבורד עובד ב-mobile responsive — טקסט RTL קריא, כפתורים נגישים, ללא גלילה אופקית
+  2. כל מסך בדאשבורד עובד ב-mobile responsive — טקסט RTל קריא, כפתורים נגישים, ללא גלילה אופקית
 **Plans**: TBD
 
 ## Progress
@@ -108,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-18 |
 | 2. Contact CRM | 4/4 | Complete   | 2026-03-18 |
-| 3. Campaign Management | 0/TBD | Not started | - |
+| 3. Campaign Management | 0/4 | Not started | - |
 | 4. Scheduler Engine | 0/TBD | Not started | - |
 | 5. Monitoring + Error UX | 0/TBD | Not started | - |
 | 6. Stats + Polish | 0/TBD | Not started | - |
