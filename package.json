@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "scheduler": "node src/scheduler/index.js",
-    "build:scheduler": "tsc --project tsconfig.json --outDir dist"
+    "build:scheduler": "tsc --project tsconfig.json --outDir dist",
+    "setup:airtable": "npx ts-node --project tsconfig.scripts.json scripts/setup-airtable.ts",
+    "seed:airtable": "npx ts-node --project tsconfig.scripts.json scripts/seed-airtable.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
