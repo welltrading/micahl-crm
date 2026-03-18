@@ -8,7 +8,7 @@
 ### UX — עצמאות תפעולית
 
 - [x] **UX-01**: כל פעולה שגרתית (יצירת קמפיין, הגדרת הודעות, הוספת נרשמת) מתבצעת דרך ממשק ויזואלי ברור — ללא עריכת קוד, ללא גישה ל-Airtable ישירות
-- [ ] **UX-02**: הגדרת זמני שליחה (שבוע לפני / יום לפני / בוקר / חצי שעה לפני) מתבצעת בבחירה ויזואלית — לא בכתיבת תאריכים ידנית
+- [x] **UX-02**: הגדרת זמני שליחה (שבוע לפני / יום לפני / בוקר / חצי שעה לפני) מתבצעת בבחירה ויזואלית — לא בכתיבת תאריכים ידנית
 - [x] **UX-03**: בעת הקמת אינטגרציה חדשה (GREEN API, MAKE.com webhook) המערכת מספקת הנחיות step-by-step בתוך הדאשבורד
 - [ ] **UX-04**: שגיאות ובעיות (הודעה שנכשלה, GREEN API מנותק) מוסברות בשפה פשוטה עם פעולה מוצעת — לא קודי שגיאה טכניים
 
@@ -18,7 +18,7 @@
 - [x] **INFRA-02**: Next.js app מוגדר על Railway עם Bree scheduler פועל כתהליך מתמשך
 - [x] **INFRA-03**: שכבת שירות (service layer) לכל גישה ל-Airtable — server-side בלבד
 - [x] **INFRA-04**: Webhook endpoint שמאפשר ל-MAKE.com להוסיף נרשמת חדשה למערכת
-- [ ] **INFRA-05**: ניתן לראות סטטוס חיבור GREEN API בדאשבורד (מחובר / מנותק)
+- [x] **INFRA-05**: ניתן לראות סטטוס חיבור GREEN API בדאשבורד (מחובר / מנותק)
 
 ### Contacts — ניהול אנשי קשר
 
@@ -37,9 +37,9 @@
 
 ### Messaging — שליחת הודעות
 
-- [ ] **MSG-01**: Bree scheduler מפעיל כל דקה בדיקה לשליחות ממתינות ושולח דרך GREEN API
-- [ ] **MSG-02**: מנגנון idempotency — הודעה עם סטטוס pending→sending→sent/failed מונע שליחה כפולה
-- [ ] **MSG-03**: מספרי טלפון מנורמלים אוטומטית לפורמט `972XXXXXXXXXX@c.us` לפני שליחה
+- [x] **MSG-01**: Bree scheduler מפעיל כל דקה בדיקה לשליחות ממתינות ושולח דרך GREEN API
+- [x] **MSG-02**: מנגנון idempotency — הודעה עם סטטוס pending→sending→sent/failed מונע שליחה כפולה
+- [x] **MSG-03**: מספרי טלפון מנורמלים אוטומטית לפורמט `972XXXXXXXXXX@c.us` לפני שליחה
 - [ ] **MSG-04**: מיכל יכולה לשלוח broadcast — הודעה חד-פעמית לכל הנרשמות לקמפיין
 
 ### Monitoring — מעקב
@@ -83,14 +83,14 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | UX-01 | Phase 2 | Complete |
-| UX-02 | Phase 3 | Pending |
+| UX-02 | Phase 3 | Complete |
 | UX-03 | Phase 1 | Complete |
 | UX-04 | Phase 5 | Pending |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 2 | Complete |
-| INFRA-05 | Phase 4 | Pending |
+| INFRA-05 | Phase 4 | Complete |
 | CONT-01 | Phase 2 | Complete |
 | CONT-02 | Phase 2 | Complete |
 | CONT-03 | Phase 2 | Complete |
@@ -100,9 +100,9 @@
 | CAMP-04 | Phase 3 | Complete |
 | CAMP-05 | Phase 3 | Complete |
 | CAMP-06 | Phase 3 | Complete |
-| MSG-01 | Phase 4 | Pending |
-| MSG-02 | Phase 4 | Pending |
-| MSG-03 | Phase 4 | Pending |
+| MSG-01 | Phase 4 | Complete |
+| MSG-02 | Phase 4 | Complete |
+| MSG-03 | Phase 4 | Complete |
 | MSG-04 | Phase 4 | Pending |
 | MON-01 | Phase 5 | Pending |
 | MON-02 | Phase 5 | Pending |
