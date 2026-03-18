@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function Home() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">ברוך הבא, מיכל</h1>
+      <h1 className="text-2xl font-bold">ברוכה הבאה, מיכל</h1>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

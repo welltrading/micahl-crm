@@ -16,8 +16,8 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl">
       <body className="antialiased">
-        {/* flex-row-reverse places sidebar on the right in RTL */}
-        <div className="flex flex-row-reverse min-h-screen">
+        {/* RTL flex: dir=rtl on <html> means flex-row places sidebar on the right automatically */}
+        <div className="flex min-h-screen">
           <Sidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <MobileHeader />
