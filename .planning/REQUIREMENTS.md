@@ -9,14 +9,14 @@
 
 - [ ] **UX-01**: כל פעולה שגרתית (יצירת קמפיין, הגדרת הודעות, הוספת נרשמת) מתבצעת דרך ממשק ויזואלי ברור — ללא עריכת קוד, ללא גישה ל-Airtable ישירות
 - [ ] **UX-02**: הגדרת זמני שליחה (שבוע לפני / יום לפני / בוקר / חצי שעה לפני) מתבצעת בבחירה ויזואלית — לא בכתיבת תאריכים ידנית
-- [ ] **UX-03**: בעת הקמת אינטגרציה חדשה (GREEN API, MAKE.com webhook) המערכת מספקת הנחיות step-by-step בתוך הדאשבורד
+- [x] **UX-03**: בעת הקמת אינטגרציה חדשה (GREEN API, MAKE.com webhook) המערכת מספקת הנחיות step-by-step בתוך הדאשבורד
 - [ ] **UX-04**: שגיאות ובעיות (הודעה שנכשלה, GREEN API מנותק) מוסברות בשפה פשוטה עם פעולה מוצעת — לא קודי שגיאה טכניים
 
 ### Infrastructure (תשתית)
 
 - [x] **INFRA-01**: Airtable base עם schema מלא — Campaigns, Contacts, Messages, MessageLog
 - [x] **INFRA-02**: Next.js app מוגדר על Railway עם Bree scheduler פועל כתהליך מתמשך
-- [ ] **INFRA-03**: שכבת שירות (service layer) לכל גישה ל-Airtable — server-side בלבד
+- [x] **INFRA-03**: שכבת שירות (service layer) לכל גישה ל-Airtable — server-side בלבד
 - [ ] **INFRA-04**: Webhook endpoint שמאפשר ל-MAKE.com להוסיף נרשמת חדשה למערכת
 - [ ] **INFRA-05**: ניתן לראות סטטוס חיבור GREEN API בדאשבורד (מחובר / מנותק)
 
@@ -84,11 +84,11 @@
 |-------------|-------|--------|
 | UX-01 | Phase 2 | Pending |
 | UX-02 | Phase 3 | Pending |
-| UX-03 | Phase 1 | Pending |
+| UX-03 | Phase 1 | Complete |
 | UX-04 | Phase 5 | Pending |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 2 | Pending |
 | INFRA-05 | Phase 4 | Pending |
 | CONT-01 | Phase 2 | Pending |

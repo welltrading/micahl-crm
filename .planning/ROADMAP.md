@@ -12,7 +12,7 @@ Six phases that build from infrastructure upward, each delivering a verifiable c
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Next.js project on Railway, Airtable schema, service layer, Hebrew RTL layout
+- [x] **Phase 1: Foundation** - Next.js project on Railway, Airtable schema, service layer, Hebrew RTL layout (completed 2026-03-18)
 - [ ] **Phase 2: Contact CRM** - Contact list UI, add contact manually, webhook intake from MAKE.com, phone normalization
 - [ ] **Phase 3: Campaign Management** - Campaign creation, event-relative message scheduling, timezone-correct UTC storage
 - [ ] **Phase 4: Scheduler Engine** - Bree scheduler, GREEN API integration, idempotent send loop, broadcast capability
@@ -100,7 +100,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/3 | In Progress|  |
+| 1. Foundation | 3/3 | Complete   | 2026-03-18 |
 | 2. Contact CRM | 0/TBD | Not started | - |
 | 3. Campaign Management | 0/TBD | Not started | - |
 | 4. Scheduler Engine | 0/TBD | Not started | - |
