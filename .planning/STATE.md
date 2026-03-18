@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-03-18T21:47:00.000Z"
+stopped_at: Completed 04-04 Task 1 — GREEN API badge on Settings page; awaiting human-verify checkpoint
+last_updated: "2026-03-18T21:52:17.623Z"
 last_activity: 2026-03-18 — 04-03 broadcastAction + broadcast UI complete
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 14
   percent: 91
 ---
 
@@ -62,6 +62,7 @@ Progress: [█████████░] 91%
 | Phase 04-scheduler-engine P01 | 4 | 2 tasks | 6 files |
 | Phase 04-scheduler-engine P02 | 3 | 2 tasks | 6 files |
 | Phase 04-scheduler-engine P03 | 8 | 2 tasks | 2 files |
+| Phase 04-scheduler-engine P04 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,8 @@ Recent decisions affecting current work:
 - [Phase 04-scheduler-engine]: Boot recovery via resetStuckSendingMessages() before bree.start() prevents double-sending on crash restart
 - [Phase 04-scheduler-engine]: broadcastAction uses 1s delay (vs 500ms minimum) for GREEN API safety margin — partial failures logged in failed counter without aborting remaining sends
 - [Phase 04-scheduler-engine]: Two-step confirmation inline amber box prevents accidental mass sends — shows enrollment count before confirming
+- [Phase 04-scheduler-engine]: force-dynamic on hagdarot page ensures GREEN API status is always fetched live, not cached at build time
+- [Phase 04-scheduler-engine]: Three-state GREEN API badge (green/red/gray) — gray for unknown covers missing env vars and network errors with actionable Hebrew guidance
 
 ### Pending Todos
 
@@ -126,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:47:00.000Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-03-18T21:52:17.616Z
+Stopped at: Completed 04-04 Task 1 — GREEN API badge on Settings page; awaiting human-verify checkpoint
 Resume file: None

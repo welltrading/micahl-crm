@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Next.js project on Railway, Airtable schema, service layer, Hebrew RTL layout (completed 2026-03-18)
 - [x] **Phase 2: Contact CRM** - Contact list UI, add contact manually, webhook intake from MAKE.com, phone normalization (completed 2026-03-18)
 - [ ] **Phase 3: Campaign Management** - Campaign creation, event-relative message scheduling, timezone-correct UTC storage
-- [ ] **Phase 4: Scheduler Engine** - Bree scheduler, GREEN API integration, idempotent send loop, broadcast capability
+- [x] **Phase 4: Scheduler Engine** - Bree scheduler, GREEN API integration, idempotent send loop, broadcast capability (completed 2026-03-18)
 - [ ] **Phase 5: Monitoring + Error UX** - Message status board, per-contact delivery view, error explanations, GREEN API health indicator
 - [ ] **Phase 6: Stats + Polish** - Monthly growth stats, reschedule pending message, mobile RTL pass
 
@@ -121,6 +121,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 3/3 | Complete   | 2026-03-18 |
 | 2. Contact CRM | 4/4 | Complete   | 2026-03-18 |
 | 3. Campaign Management | 3/4 | In Progress|  |
-| 4. Scheduler Engine | 3/4 | In Progress|  |
+| 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 0/TBD | Not started | - |
 | 6. Stats + Polish | 0/TBD | Not started | - |
