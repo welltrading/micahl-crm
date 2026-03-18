@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "scheduler": "node src/scheduler/index.js",
-    "build:scheduler": "tsc --project tsconfig.json --outDir dist",
+    "scheduler": "node dist/scheduler/index.js",
+    "scheduler:prod": "node dist/scheduler/index.js",
+    "build:scheduler": "tsc --project tsconfig.scheduler.json",
     "setup:airtable": "npx ts-node --project tsconfig.scripts.json scripts/setup-airtable.ts",
     "seed:airtable": "npx ts-node --project tsconfig.scripts.json scripts/seed-airtable.ts",
     "test": "jest"

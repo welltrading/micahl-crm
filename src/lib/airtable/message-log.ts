@@ -27,7 +27,8 @@ interface MessageLogEntry {
 export async function createMessageLogEntry(entry: MessageLogEntry): Promise<void> {
   const hebrewStatus = entry.status === 'sent' ? 'נשלחה' : 'נכשלה';
 
-  const fields: Record<string, unknown> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fields: Record<string, any> = {
     'סטטוס': hebrewStatus,
     'הודעה מתוזמנת': [entry.scheduled_message_id],
     'איש קשר': [entry.contact_id],
