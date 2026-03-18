@@ -6,15 +6,21 @@
 // Mock airtableBase before importing contacts module
 const mockAll = jest.fn();
 const mockFind = jest.fn();
+const mockCreate = jest.fn();
 const mockSelect = jest.fn(() => ({ all: mockAll }));
-const mockTable = jest.fn(() => ({ select: mockSelect, find: mockFind }));
+const mockTable = jest.fn(() => ({ select: mockSelect, find: mockFind, create: mockCreate }));
 
 jest.mock('../client', () => ({
   airtableBase: mockTable,
 }));
 
-import { getContacts, getContactById } from '../contacts';
-import type { Contact } from '../types';
+// Mock next/cache for revalidatePath
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+}));
+
+import { getContacts, getContactById, createContact, getContactEnrollments, getContactMessages } from '../contacts';
+import type { Contact, CampaignEnrollment, ScheduledMessage } from '../types';
 
 describe('getContacts', () => {
   beforeEach(() => {
@@ -120,5 +126,278 @@ describe('getContactById', () => {
     await getContactById('recXYZ');
 
     expect(mockFind).toHaveBeenCalledWith('recXYZ');
+  });
+});
+
+describe('createContact', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('calls Airtable create with normalized phone', async () => {
+    mockCreate.mockResolvedValueOnce({ id: 'recNew', fields: {} });
+
+    await createContact({ full_name: 'שרה לוי', phone: '050-123-4567' });
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        'שם מלא': 'שרה לוי',
+        'טלפון': '972501234567',
+      }),
+      expect.anything()
+    );
+  });
+
+  it('normalizes +972 format before storing', async () => {
+    mockCreate.mockResolvedValueOnce({ id: 'recNew2', fields: {} });
+
+    await createContact({ full_name: 'מרים כהן', phone: '+972521234567' });
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        'טלפון': '972521234567',
+      }),
+      expect.anything()
+    );
+  });
+
+  it('includes תאריך הצטרפות as today ISO date', async () => {
+    mockCreate.mockResolvedValueOnce({ id: 'recNew3', fields: {} });
+
+    const today = new Date().toISOString().split('T')[0];
+    await createContact({ full_name: 'לאה דוד', phone: '0501234567' });
+
+    const callArg = mockCreate.mock.calls[0][0];
+    expect(callArg['תאריך הצטרפות']).toBe(today);
+  });
+
+  it('returns { success: true } on successful creation', async () => {
+    mockCreate.mockResolvedValueOnce({ id: 'recNew4', fields: {} });
+
+    const result = await createContact({ full_name: 'רות אלון', phone: '972501234567' });
+
+    expect(result).toEqual({ success: true });
+  });
+});
+
+describe('getContactEnrollments', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('uses FIND ARRAYJOIN filterByFormula for linked record field', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    await getContactEnrollments('recABC');
+
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filterByFormula: 'FIND("recABC", ARRAYJOIN({איש קשר}))',
+      })
+    );
+  });
+
+  it('queries the CampaignEnrollments table', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    await getContactEnrollments('recABC');
+
+    expect(mockTable).toHaveBeenCalledWith('CampaignEnrollments');
+  });
+
+  it('returns only enrollments matching the contact', async () => {
+    const mockRecords = [
+      {
+        id: 'recEnroll1',
+        fields: {
+          'קמפיין': ['recCamp1'],
+          'איש קשר': ['recABC'],
+          'מקור': 'ידני',
+          'תאריך רישום': '2026-03-01T00:00:00.000Z',
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getContactEnrollments('recABC');
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject<CampaignEnrollment>({
+      id: 'recEnroll1',
+      campaign_id: ['recCamp1'],
+      contact_id: ['recABC'],
+      source: 'manual',
+      enrolled_at: '2026-03-01T00:00:00.000Z',
+    });
+  });
+
+  it('maps מקור Webhook to webhook source', async () => {
+    const mockRecords = [
+      {
+        id: 'recEnroll2',
+        fields: {
+          'קמפיין': ['recCamp2'],
+          'איש קשר': ['recABC'],
+          'מקור': 'Webhook',
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getContactEnrollments('recABC');
+
+    expect(result[0].source).toBe('webhook');
+  });
+
+  it('maps מקור ידני to manual source', async () => {
+    const mockRecords = [
+      {
+        id: 'recEnroll3',
+        fields: {
+          'קמפיין': ['recCamp3'],
+          'איש קשר': ['recABC'],
+          'מקור': 'ידני',
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getContactEnrollments('recABC');
+
+    expect(result[0].source).toBe('manual');
+  });
+
+  it('returns empty array when no enrollments found', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    const result = await getContactEnrollments('recNONE');
+
+    expect(result).toEqual([]);
+  });
+});
+
+describe('getContactMessages', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('uses FIND ARRAYJOIN filterByFormula for linked record field', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    await getContactMessages('recABC');
+
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filterByFormula: 'FIND("recABC", ARRAYJOIN({איש קשר}))',
+      })
+    );
+  });
+
+  it('queries the ScheduledMessages table', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    await getContactMessages('recABC');
+
+    expect(mockTable).toHaveBeenCalledWith('ScheduledMessages');
+  });
+
+  it('maps תזמון offset labels correctly', async () => {
+    const makeRecord = (id: string, timing: string) => ({
+      id,
+      fields: {
+        'קמפיין': ['recCamp1'],
+        'איש קשר': ['recABC'],
+        'תוכן ההודעה': 'תוכן הודעה לדוגמה',
+        'שליחה בשעה': '2026-04-01T08:00:00.000Z',
+        'תזמון': timing,
+        'סטטוס': 'ממתינה',
+      },
+    });
+
+    const cases: Array<[string, ScheduledMessage['offset_label']]> = [
+      ['שבוע לפני', 'week_before'],
+      ['יום לפני', 'day_before'],
+      ['בוקר האירוע', 'morning'],
+      ['חצי שעה לפני', 'half_hour'],
+    ];
+
+    for (const [hebrewLabel, expectedLabel] of cases) {
+      jest.clearAllMocks();
+      mockAll.mockResolvedValueOnce([makeRecord('recMsg1', hebrewLabel)]);
+
+      const result = await getContactMessages('recABC');
+
+      expect(result[0].offset_label).toBe(expectedLabel);
+    }
+  });
+
+  it('maps סטטוס values correctly', async () => {
+    const makeRecord = (id: string, status: string) => ({
+      id,
+      fields: {
+        'קמפיין': ['recCamp1'],
+        'איש קשר': ['recABC'],
+        'תוכן ההודעה': 'תוכן',
+        'שליחה בשעה': '2026-04-01T08:00:00.000Z',
+        'תזמון': 'יום לפני',
+        'סטטוס': status,
+      },
+    });
+
+    const cases: Array<[string, ScheduledMessage['status']]> = [
+      ['ממתינה', 'pending'],
+      ['שולח', 'sending'],
+      ['נשלחה', 'sent'],
+      ['נכשלה', 'failed'],
+    ];
+
+    for (const [hebrewStatus, expectedStatus] of cases) {
+      jest.clearAllMocks();
+      mockAll.mockResolvedValueOnce([makeRecord('recMsg2', hebrewStatus)]);
+
+      const result = await getContactMessages('recABC');
+
+      expect(result[0].status).toBe(expectedStatus);
+    }
+  });
+
+  it('maps full ScheduledMessage record correctly', async () => {
+    const mockRecords = [
+      {
+        id: 'recMsg3',
+        fields: {
+          'קמפיין': ['recCamp1'],
+          'איש קשר': ['recABC'],
+          'תוכן ההודעה': 'שלום! תזכורת לאירוע',
+          'שליחה בשעה': '2026-04-01T08:00:00.000Z',
+          'תזמון': 'בוקר האירוע',
+          'סטטוס': 'נשלחה',
+          'נשלח בשעה': '2026-04-01T08:01:00.000Z',
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getContactMessages('recABC');
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject<ScheduledMessage>({
+      id: 'recMsg3',
+      campaign_id: ['recCamp1'],
+      contact_id: ['recABC'],
+      message_content: 'שלום! תזכורת לאירוע',
+      send_at: '2026-04-01T08:00:00.000Z',
+      offset_label: 'morning',
+      status: 'sent',
+      sent_at: '2026-04-01T08:01:00.000Z',
+    });
+  });
+
+  it('returns empty array when no messages found', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    const result = await getContactMessages('recNONE');
+
+    expect(result).toEqual([]);
   });
 });
