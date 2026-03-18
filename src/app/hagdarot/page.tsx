@@ -1,8 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getGreenApiState } from '@/lib/airtable/green-api';
 
-export default function HagdarotPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HagdarotPage() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://YOUR-RAILWAY-DOMAIN';
   const webhookUrl = `${appUrl}/api/webhook/contact`;
+
+  const state = await getGreenApiState();
+  const isConnected = state === 'authorized';
+  const isUnknown = state === 'unknown';
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -19,6 +26,33 @@ export default function HagdarotPage() {
           <CardTitle className="text-lg">חיבור GREEN API</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Connection status badge */}
+          <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-muted">
+            <div
+              className={`w-2.5 h-2.5 rounded-full ${
+                isUnknown ? 'bg-gray-400' : isConnected ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            />
+            <span className="text-sm font-medium">
+              {isUnknown ? 'סטטוס לא ידוע' : isConnected ? 'מחובר' : 'מנותק'}
+            </span>
+            {isUnknown && (
+              <span className="text-sm text-muted-foreground me-auto">
+                — יש להגדיר GREEN_API_INSTANCE_ID ו-GREEN_API_TOKEN
+              </span>
+            )}
+            {!isUnknown && !isConnected && (
+              <span className="text-sm text-muted-foreground me-auto">
+                — GREEN API אינה מחוברת. חברי שוב לפי ההוראות למטה.
+              </span>
+            )}
+            {!isUnknown && isConnected && (
+              <span className="text-sm text-muted-foreground me-auto">
+                — GREEN API פעילה ומוכנה לשליחת הודעות
+              </span>
+            )}
+          </div>
+
           <ol className="space-y-3 list-decimal list-inside text-sm leading-relaxed">
             <li>כנסי לאתר <strong>green-api.com</strong> וצרי חשבון</li>
             <li>
