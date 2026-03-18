@@ -15,7 +15,7 @@
 ### Infrastructure (תשתית)
 
 - [ ] **INFRA-01**: Airtable base עם schema מלא — Campaigns, Contacts, Messages, MessageLog
-- [ ] **INFRA-02**: Next.js app מוגדר על Railway עם Bree scheduler פועל כתהליך מתמשך
+- [x] **INFRA-02**: Next.js app מוגדר על Railway עם Bree scheduler פועל כתהליך מתמשך
 - [ ] **INFRA-03**: שכבת שירות (service layer) לכל גישה ל-Airtable — server-side בלבד
 - [ ] **INFRA-04**: Webhook endpoint שמאפשר ל-MAKE.com להוסיף נרשמת חדשה למערכת
 - [ ] **INFRA-05**: ניתן לראות סטטוס חיבור GREEN API בדאשבורד (מחובר / מנותק)
@@ -87,7 +87,7 @@
 | UX-03 | Phase 1 | Pending |
 | UX-04 | Phase 5 | Pending |
 | INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Pending |
 | INFRA-04 | Phase 2 | Pending |
 | INFRA-05 | Phase 4 | Pending |

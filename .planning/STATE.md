@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-17T20:45:31.376Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-18T07:39:59.055Z"
 last_activity: 2026-03-17 — Roadmap created, traceability mapped
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01-foundation P01 | 12 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - WhatsApp: GREEN API v2 only — v1 deprecated March 2026
 - RTL: shadcn/ui Jan 2026 release with `--rtl` flag; Tailwind 4 logical CSS properties (`ms-*`, `ps-*`)
 - MAKE.com: Still sends webhook to add contacts — we receive it, not replace it
+- [Phase 01-foundation]: Next.js 16.1.7 installed (latest stable, plan targeted 15) — no breaking changes for this project
+- [Phase 01-foundation]: Tailwind 4 is config-file-free — CSS-first via @theme directives in globals.css
+- [Phase 01-foundation]: .gitignore uses explicit .env.local exclusions (not .env*) to allow .env.local.example to be committed
 
 ### Pending Todos
 
@@ -76,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T20:45:31.317Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-foundation/01-CONTEXT.md
+Last session: 2026-03-18T07:39:59.048Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None
