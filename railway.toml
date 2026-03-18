@@ -14,4 +14,4 @@ startCommand = "npm run start"
 
 [[services]]
 name = "scheduler"
-startCommand = "node src/scheduler/index.js"
+startCommand = "node dist/scheduler/index.js"

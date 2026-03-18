@@ -1,13 +1,21 @@
 import Bree from 'bree';
 import path from 'path';
+import { resetStuckSendingMessages } from '../lib/airtable/scheduler-services';
 
-const bree = new Bree({
-  root: path.join(__dirname, 'jobs'),
-  jobs: [
-    // Phase 4 will add: { name: 'send-messages', interval: '1m' }
-  ],
-});
+async function main(): Promise<void> {
+  // Recovery: reset messages stuck in 'בשליחה' from a previous crashed process
+  await resetStuckSendingMessages();
+  console.log('Boot recovery: stuck sending messages reset');
 
-bree.start().then(() => {
-  console.log('Bree scheduler started — no jobs configured yet (Phase 4)');
-});
+  const bree = new Bree({
+    root: path.join(__dirname, 'jobs'),
+    jobs: [
+      { name: 'send-messages', interval: '1m' },
+    ],
+  });
+
+  await bree.start();
+  console.log('Bree scheduler started — send-messages job active (every 1 minute)');
+}
+
+main().catch(console.error);
