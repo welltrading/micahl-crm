@@ -1,6 +1,6 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { getContacts, createContact } from '@/lib/airtable/contacts';
+import { getContacts, createContact, getContactEnrollments, getContactMessages } from '@/lib/airtable/contacts';
 import { normalizePhone } from '@/lib/airtable/phone';
 
 export async function addContact(
@@ -15,4 +15,12 @@ export async function addContact(
   await createContact({ full_name: fullName.trim(), phone: normalized });
   revalidatePath('/anshei-kesher');
   return { success: true };
+}
+
+export async function getContactDetail(contactId: string) {
+  const [enrollments, messages] = await Promise.all([
+    getContactEnrollments(contactId),
+    getContactMessages(contactId),
+  ]);
+  return { enrollments, messages };
 }

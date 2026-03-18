@@ -1,0 +1,149 @@
+'use client';
+
+import * as React from 'react';
+import type { Contact, CampaignEnrollment, ScheduledMessage } from '@/lib/airtable/types';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { getContactDetail } from '@/app/anshei-kesher/actions';
+import { formatPhoneDisplay } from '@/lib/airtable/phone';
+
+interface ContactDetailPanelProps {
+  contact: Contact | null;
+  onClose: () => void;
+}
+
+const OFFSET_LABEL_HE: Record<ScheduledMessage['offset_label'], string> = {
+  week_before: 'שבוע לפני',
+  day_before: 'יום לפני',
+  morning: 'בוקר האירוע',
+  half_hour: 'חצי שעה לפני',
+};
+
+const STATUS_LABEL_HE: Record<ScheduledMessage['status'], string> = {
+  pending: 'ממתינה',
+  sending: 'שולח',
+  sent: 'נשלחה',
+  failed: 'נכשלה',
+};
+
+const STATUS_BADGE_CLASS: Record<ScheduledMessage['status'], string> = {
+  pending: 'bg-gray-100 text-gray-700',
+  sending: 'bg-blue-100 text-blue-700',
+  sent: 'bg-green-100 text-green-700',
+  failed: 'bg-red-100 text-red-700',
+};
+
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('he-IL');
+}
+
+export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps) {
+  const [detail, setDetail] = React.useState<{
+    enrollments: CampaignEnrollment[];
+    messages: ScheduledMessage[];
+  } | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!contact) {
+      setDetail(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    getContactDetail(contact.id).then((data) => {
+      if (!cancelled) {
+        setDetail(data);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [contact?.id]);
+
+  return (
+    <Sheet open={!!contact} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="left">
+        <SheetHeader>
+          <SheetTitle>{contact?.full_name}</SheetTitle>
+        </SheetHeader>
+
+        {contact && (
+          <div className="flex flex-col gap-4 p-4 overflow-y-auto">
+            {/* Contact info */}
+            <div className="flex flex-col gap-1 text-sm">
+              <p>
+                <span className="font-medium">טלפון:</span>{' '}
+                <span dir="ltr">{formatPhoneDisplay(contact.phone)}</span>
+              </p>
+              <p>
+                <span className="font-medium">תאריך הצטרפות:</span>{' '}
+                {formatDate(contact.joined_date)}
+              </p>
+            </div>
+
+            {/* Message history */}
+            <div>
+              <h3 className="text-sm font-semibold mb-2">היסטוריית הודעות</h3>
+
+              {loading && <p className="text-sm text-muted-foreground">טוען...</p>}
+
+              {!loading && detail && detail.enrollments.length === 0 && (
+                <p className="text-sm text-muted-foreground">אין רישומים לקמפיינים</p>
+              )}
+
+              {!loading && detail && detail.enrollments.length > 0 && (
+                <div className="flex flex-col gap-4">
+                  {detail.enrollments.map((enrollment) => {
+                    const campaignId = enrollment.campaign_id[0];
+                    const campaignMessages = detail.messages.filter(
+                      (m) => m.campaign_id[0] === campaignId
+                    );
+                    return (
+                      <div key={enrollment.id} className="flex flex-col gap-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          קמפיין: {campaignId}
+                        </p>
+                        {campaignMessages.length === 0 ? (
+                          <p className="text-sm text-muted-foreground ps-2">אין הודעות מתוזמנות</p>
+                        ) : (
+                          <div className="flex flex-col gap-1 ps-2">
+                            {campaignMessages.map((msg) => (
+                              <div
+                                key={msg.id}
+                                className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-sm"
+                              >
+                                <span>{OFFSET_LABEL_HE[msg.offset_label]}</span>
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASS[msg.status]}`}
+                                >
+                                  {STATUS_LABEL_HE[msg.status]}
+                                </span>
+                                <span
+                                  dir="ltr"
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  {formatDate(msg.send_at)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
