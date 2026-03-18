@@ -83,7 +83,13 @@ Plans:
   3. סטטוס חיבור GREEN API מוצג בדאשבורד (מחובר / מנותק) — מיכל רואה בעיה לפני שהיא מגלה שהודעות לא נשלחו
   4. מיכל לוחצת "שלח broadcast" לקמפיין, מאשרת, וכל הנרשמות מקבלות את ההודעה תוך דקות
   5. מספרי טלפון בפורמטים שונים (050-..., +972..., 972...) נשלחים בהצלחה — נורמליזציה שקופה
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — GREEN API client + scheduler service layer + test scaffolds (Wave 1)
+- [ ] 04-02-PLAN.md — Bree send-messages job + tsconfig.scheduler.json + railway.toml update (Wave 2)
+- [ ] 04-03-PLAN.md — broadcastAction Server Action + CampaignSheet broadcast UI (Wave 2)
+- [ ] 04-04-PLAN.md — GREEN API status badge on Settings page + human verify checkpoint (Wave 3)
 
 ### Phase 5: Monitoring + Error UX
 **Goal**: מיכל יכולה לעקוב אחרי מצב כל הודעה, לדעת מי לא קיבל, ולהבין שגיאות בשפה פשוטה — לא קודי שגיאה
@@ -115,6 +121,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 3/3 | Complete   | 2026-03-18 |
 | 2. Contact CRM | 4/4 | Complete   | 2026-03-18 |
 | 3. Campaign Management | 3/4 | In Progress|  |
-| 4. Scheduler Engine | 0/TBD | Not started | - |
+| 4. Scheduler Engine | 0/4 | Not started | - |
 | 5. Monitoring + Error UX | 0/TBD | Not started | - |
 | 6. Stats + Polish | 0/TBD | Not started | - |
