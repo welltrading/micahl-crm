@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactsTable } from './ContactsTable';
 import { AddContactModal } from './AddContactModal';
+import { ContactDetailPanel } from './ContactDetailPanel';
 
 interface ContactsPageClientProps {
   contacts: Contact[];
@@ -28,9 +29,6 @@ export function ContactsPageClient({ contacts }: ContactsPageClientProps) {
   const [search, setSearch] = React.useState('');
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
-
-  // Suppress unused warning — selectedContact used in plan 02-04 for detail panel
-  void selectedContact;
 
   // Stats derived from contacts (no extra fetch)
   const totalContacts = contacts.length;
@@ -104,6 +102,9 @@ export function ContactsPageClient({ contacts }: ContactsPageClientProps) {
 
       {/* Add contact modal */}
       <AddContactModal open={addModalOpen} onOpenChange={setAddModalOpen} />
+
+      {/* Contact detail panel */}
+      <ContactDetailPanel contact={selectedContact} onClose={() => setSelectedContact(null)} />
     </div>
   );
 }
