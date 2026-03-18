@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-18T21:36:37.061Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-18T21:42:39.915Z"
 last_activity: 2026-03-18 — 03-03 campaigns list page complete, human-verified
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 15
-  completed_plans: 11
+  completed_plans: 12
   percent: 91
 ---
 
@@ -60,6 +60,7 @@ Progress: [█████████░] 91%
 | Phase 03-campaign-management P02 | 5 | 2 tasks | 2 files |
 | Phase 03-campaign-management P03 | 10 | 2 tasks | 5 files |
 | Phase 04-scheduler-engine P01 | 4 | 2 tasks | 6 files |
+| Phase 04-scheduler-engine P02 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,9 @@ Recent decisions affecting current work:
 - [Phase 03-campaign-management]: selectedCampaign state wired in CampaignsPageClient now — Plan 04 CampaignSheet requires no component refactor
 - [Phase 04-scheduler-engine]: broadcast.test.ts stubs are intentionally RED — broadcastAction implemented in plan 04-03
 - [Phase 04-scheduler-engine]: scheduler-services.ts uses relative imports and no server-only — Bree worker thread compatible
+- [Phase 04-scheduler-engine]: tsconfig.scheduler.json uses module:commonjs + explicit .ts globs for include paths
+- [Phase 04-scheduler-engine]: markMessageSent called after all enrollments processed; individual contact failures logged in MessageLog without failing parent message
+- [Phase 04-scheduler-engine]: Boot recovery via resetStuckSendingMessages() before bree.start() prevents double-sending on crash restart
 
 ### Pending Todos
 
@@ -119,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:36:37.054Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-18T21:42:39.908Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
