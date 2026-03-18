@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-18T07:39:59.055Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-18T07:46:55.671Z"
 last_activity: 2026-03-17 — Roadmap created, traceability mapped
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-foundation P01 | 12 | 2 tasks | 10 files |
+| Phase 01-foundation P02 | 15 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Next.js 16.1.7 installed (latest stable, plan targeted 15) — no breaking changes for this project
 - [Phase 01-foundation]: Tailwind 4 is config-file-free — CSS-first via @theme directives in globals.css
 - [Phase 01-foundation]: .gitignore uses explicit .env.local exclusions (not .env*) to allow .env.local.example to be committed
+- [Phase 01-foundation]: English table names for Airtable (API stability in URLs); Hebrew field display names only
+- [Phase 01-foundation]: tsconfig.scripts.json with moduleResolution:node needed for Airtable SDK type compatibility (bundler resolution incompatible)
+- [Phase 01-foundation]: Linked record fields require manual Airtable UI setup post-script (Meta API needs existing table IDs)
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T07:39:59.048Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-18T07:46:55.664Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
