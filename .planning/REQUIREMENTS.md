@@ -23,7 +23,7 @@
 ### Contacts — ניהול אנשי קשר
 
 - [x] **CONT-01**: מיכל יכולה לראות רשימת כל אנשי הקשר (שם, טלפון, תאריך הצטרפות, קמפיין)
-- [ ] **CONT-02**: מיכל יכולה לראות לכל איש קשר אילו הודעות קיבל
+- [x] **CONT-02**: מיכל יכולה לראות לכל איש קשר אילו הודעות קיבל
 - [x] **CONT-03**: מיכל יכולה לראות סטטיסטיקות בסיסיות — כמה נרשמו בחודש, סך הכל
 
 ### Campaigns — ניהול קמפיינים
@@ -92,7 +92,7 @@
 | INFRA-04 | Phase 2 | Complete |
 | INFRA-05 | Phase 4 | Pending |
 | CONT-01 | Phase 2 | Complete |
-| CONT-02 | Phase 2 | Pending |
+| CONT-02 | Phase 2 | Complete |
 | CONT-03 | Phase 2 | Complete |
 | CAMP-01 | Phase 3 | Pending |
 | CAMP-02 | Phase 3 | Pending |
