@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-18T11:09:57.905Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-18T11:43:55.658Z"
 last_activity: 2026-03-18 — 02-04 contact detail panel complete, human-verified
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 11
+  completed_plans: 8
   percent: 14
 ---
 
@@ -56,6 +56,7 @@ Progress: [█░░░░░░░░░] 14%
 | Phase 02-contact-crm P02 | 3 | 1 tasks | 3 files |
 | Phase 02-contact-crm P03 | 15 | 3 tasks | 6 files |
 | Phase 02-contact-crm P04 | 5 | 2 tasks | 3 files |
+| Phase 03-campaign-management P01 | 8 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,9 @@ Recent decisions affecting current work:
 - [Phase 02-contact-crm]: Lazy load on panel open via useEffect on contact?.id — no Airtable calls at page load, respects rate limits
 - [Phase 02-contact-crm]: Cancelled fetch flag in useEffect cleanup prevents stale state on rapid contact switching
 - [Phase 02-contact-crm]: Campaign ID shown as section header in detail panel — Phase 3 campaign lookup will enrich with campaign names
+- [Phase 03-campaign-management]: Intl.DateTimeFormat offset adjustment uses +diff (not -diff): diff=target-displayed; if displayed is ahead diff is negative; adding it to UTC gives correct earlier time
+- [Phase 03-campaign-management]: computeSendAt adjusts date in UTC arithmetic then resolves local Jerusalem time before calling localIsraelToUTC — never UTC day subtraction then local format
+- [Phase 03-campaign-management]: DST boundary verified: March 25 (UTC+2) for week_before of April 1 event (UTC+3) — different offset on different dates handled correctly
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T11:09:57.886Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-campaign-management/03-CONTEXT.md
+Last session: 2026-03-18T11:43:47.183Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
