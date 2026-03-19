@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01 message log data layer
-last_updated: "2026-03-19T11:39:49.307Z"
-last_activity: 2026-03-18 — 04-03 broadcastAction + broadcast UI complete
+stopped_at: Completed 05-02 GREEN API disconnect banner
+last_updated: "2026-03-19T12:00:00.000Z"
+last_activity: 2026-03-19 — 05-02 GREEN API disconnect banner on campaigns page complete
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 18
-  completed_plans: 15
-  percent: 91
+  completed_plans: 16
+  percent: 94
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 
 ## Current Position
 
-Phase: 4 of 6 (Scheduler Engine)
-Plan: 3 of 4 in current phase (04-03 complete — broadcastAction + broadcast UI)
+Phase: 5 of 6 (Monitoring + Error UX)
+Plan: 2 of 3 in current phase (05-02 complete — GREEN API disconnect banner)
 Status: Executing
-Last activity: 2026-03-18 — 04-03 broadcastAction + broadcast UI complete
+Last activity: 2026-03-19 — 05-02 GREEN API disconnect banner on campaigns page complete
 
-Progress: [█████████░] 91%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -119,6 +119,7 @@ Recent decisions affecting current work:
 - [Phase 04-scheduler-engine]: Three-state GREEN API badge (green/red/gray) — gray for unknown covers missing env vars and network errors with actionable Hebrew guidance
 - [Phase 05-monitoring-error-ux]: jest.spyOn for action tests avoids jest.mock hoisting conflict with ../client mock
 - [Phase 05-monitoring-error-ux]: getMessageLogByCampaign sorts client-side by logged_at — avoids Airtable sort field name ambiguity
+- [Phase 05-monitoring-error-ux]: GREEN API banner only shown for 'notAuthorized' — 'unknown' (missing env vars / network error) is silent to avoid dev noise; banner is persistent/non-dismissible
 
 ### Pending Todos
 

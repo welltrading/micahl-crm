@@ -46,7 +46,7 @@
 
 - [x] **MON-01**: מיכל יכולה לראות לוג שליחות — כל הודעה שנשלחה/נכשלה עם timestamp
 - [ ] **MON-02**: מיכל יכולה לראות מי לא קיבלה הודעה (נכשלה) לכל קמפיין
-- [ ] **MON-03**: סטטוס חיבור GREEN API מוצג בדאשבורד (health check לפני כל batch)
+- [x] **MON-03**: סטטוס חיבור GREEN API מוצג בדאשבורד (health check לפני כל batch)
 
 ## v2 Requirements
 
@@ -106,7 +106,7 @@
 | MSG-04 | Phase 4 | Complete |
 | MON-01 | Phase 5 | Complete |
 | MON-02 | Phase 5 | Pending |
-| MON-03 | Phase 5 | Pending |
+| MON-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 25 total
