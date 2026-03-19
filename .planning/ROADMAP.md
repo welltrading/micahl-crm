@@ -97,7 +97,7 @@ Plans:
 **Requirements**: MON-01, MON-02, MON-03, UX-04
 **Success Criteria** (what must be TRUE):
   1. מסך סטטוס לכל קמפיין מציג כל הודעה עם סטטוס (ממתינה / נשלחה / נכשלה) ו-timestamp
-  2. מיכל יכולה לראות ברשימה מי לא קיבל הודעה לקמפיין ספציפי — שם + טלפון + סיבת כשל
+  2. מיכל יכולה לראות ברשימה מי לא קיבלה הודעה לקמפיין ספציפי — שם + טלפון + סיבת כשל
   3. כשGREEN API מנותקת, הדאשבורד מציג הסבר בעברית פשוטה עם הוראת פעולה ("GREEN API מנותקת — נא להתחבר מחדש ב-Settings")
   4. כשהודעה נכשלת, הסיבה מוצגת בעברית ידידותית — לא "error code 403" אלא "מספר הטלפון לא קיים בוואצאפ"
 **Plans**: 3 plans
@@ -114,7 +114,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. מסך CRM מציג גרף או טבלה של הצטרפויות לפי חודש — מיכל רואה מגמה
   2. כל מסך בדאשבורד עובד ב-mobile responsive — טקסט RTל קריא, כפתורים נגישים, ללא גלילה אופקית
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Growth table in ContactsPageClient: aggregateByMonth TDD + UI integration with date range filter
+- [ ] 06-02-PLAN.md — Mobile responsive polish: layout padding fix, ContactDetailPanel width, visual checkpoint
 
 ## Progress
 
@@ -128,4 +132,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Campaign Management | 3/4 | In Progress|  |
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 3/3 | Complete   | 2026-03-19 |
-| 6. Stats + Polish | 0/TBD | Not started | - |
+| 6. Stats + Polish | 0/2 | Not started | - |
