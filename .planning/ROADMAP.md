@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Next.js project on Railway, Airtable schema, service layer, Hebrew RTL layout (completed 2026-03-18)
 - [x] **Phase 2: Contact CRM** - Contact list UI, add contact manually, webhook intake from MAKE.com, phone normalization (completed 2026-03-18)
-- [x] **Phase 3: Campaign Management** - Campaign creation, event-relative message scheduling, timezone-correct UTC storage (completed 2026-03-19)
+- [ ] **Phase 3: Campaign Management** - Campaign creation, event-relative message scheduling, timezone-correct UTC storage (gap closure in progress)
 - [x] **Phase 4: Scheduler Engine** - Bree scheduler, GREEN API integration, idempotent send loop, broadcast capability (completed 2026-03-18)
 - [x] **Phase 5: Monitoring + Error UX** - Message status board, per-contact delivery view, error explanations, GREEN API health indicator (completed 2026-03-19)
 - [x] **Phase 6: Stats + Polish** - Monthly growth stats, reschedule pending message, mobile RTL pass (completed 2026-03-19)
@@ -65,13 +65,15 @@ Plans:
   3. לאחר שמירת הקמפיין, ב-Airtable מופיעות 4 רשומות ScheduledMessages עם send_at ב-UTC — מדויקות גם אם האירוע בחציית שינוי שעון
   4. מיכל יכולה לשנות זמן שליחה של הודעה ממתינה — send_at מתעדכן מיד ב-Airtable
   5. מסך קמפיינים מציג רשימה עם סטטוס (עתידי / פעיל / הסתיים) וכמות נרשמות לכל קמפיין
-**Plans**: 4 plans
+**Plans**: 6 plans
 
 Plans:
 - [ ] 03-01-PLAN.md — Test scaffolds (timezone, scheduled-messages, campaigns extensions) + timezone.ts TDD
 - [ ] 03-02-PLAN.md — Airtable service layer: campaigns.ts extensions + scheduled-messages.ts TDD
 - [ ] 03-03-PLAN.md — Campaigns list page: card grid, create modal, Server Action
 - [ ] 03-04-PLAN.md — CampaignSheet: 4 message slots, live send preview, save/edit flow
+- [ ] 03-05-PLAN.md — Gap closure: write שליחה בשעה (UTC) in all ScheduledMessages write paths (CAMP-03 fix)
+- [ ] 03-06-PLAN.md — Gap closure: design decision — flexible date pickers vs. fixed offset labels (CAMP-02/UX-02)
 
 ### Phase 4: Scheduler Engine
 **Goal**: הודעות מתוזמנות נשלחות בזמן דרך GREEN API — הלולאה אידמפוטנטית, אי-אפשר לשלוח הודעה פעמיים, ומיכל יכולה לשלוח broadcast ידני
@@ -129,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-18 |
 | 2. Contact CRM | 4/4 | Complete   | 2026-03-18 |
-| 3. Campaign Management | 4/4 | Complete   | 2026-03-19 |
+| 3. Campaign Management | 4/6 | Gap Closure In Progress | — |
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 3/3 | Complete   | 2026-03-19 |
 | 6. Stats + Polish | 2/2 | Complete   | 2026-03-19 |
