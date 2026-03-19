@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05-03-PLAN.md — Phase 5 complete
-last_updated: "2026-03-19T13:30:04.715Z"
+stopped_at: Completed 06-01-PLAN.md (growth table + aggregateByMonth)
+last_updated: "2026-03-19T14:31:31.272Z"
 last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 18
-  completed_plans: 17
+  total_plans: 20
+  completed_plans: 18
   percent: 94
 ---
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 94%
 | Phase 05-monitoring-error-ux P01 | 6 | 2 tasks | 3 files |
 | Phase 05-monitoring-error-ux P03 | 8 | 2 tasks | 1 files |
 | Phase 05-monitoring-error-ux P03 | 15 | 3 tasks | 1 files |
+| Phase 06-stats-polish P01 | 4 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,7 @@ Recent decisions affecting current work:
 - [Phase 05-monitoring-error-ux]: GREEN API banner only shown for 'notAuthorized' — 'unknown' (missing env vars / network error) is silent to avoid dev noise; banner is persistent/non-dismissible
 - [Phase 05-monitoring-error-ux]: CampaignSheet log tab lazy-loads on first tab open only (activeTab === log && logEntries === null), cancelled-fetch flag prevents stale state
 - [Phase 05-monitoring-error-ux]: CampaignSheet log tab lazy-loads on first tab open only (activeTab === log && logEntries === null), cancelled-fetch flag prevents stale state
+- [Phase 06-stats-polish]: aggregateByMonth exported from ContactsPageClient for colocation and direct test import
 
 ### Pending Todos
 
@@ -137,6 +139,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T13:24:39.869Z
-Stopped at: Completed 05-03-PLAN.md — Phase 5 complete
+Last session: 2026-03-19T14:31:31.264Z
+Stopped at: Completed 06-01-PLAN.md (growth table + aggregateByMonth)
 Resume file: None
