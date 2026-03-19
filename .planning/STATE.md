@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 06-01-PLAN.md (growth table + aggregateByMonth)
-last_updated: "2026-03-19T14:31:31.272Z"
+stopped_at: Completed 06-02-PLAN.md (mobile responsive fixes — approved)
+last_updated: "2026-03-19T15:03:56.236Z"
 last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
   percent: 94
 ---
 
@@ -67,6 +67,7 @@ Progress: [█████████░] 94%
 | Phase 05-monitoring-error-ux P03 | 8 | 2 tasks | 1 files |
 | Phase 05-monitoring-error-ux P03 | 15 | 3 tasks | 1 files |
 | Phase 06-stats-polish P01 | 4 | 1 tasks | 2 files |
+| Phase 06-stats-polish P02 | 10 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,8 @@ Recent decisions affecting current work:
 - [Phase 05-monitoring-error-ux]: CampaignSheet log tab lazy-loads on first tab open only (activeTab === log && logEntries === null), cancelled-fetch flag prevents stale state
 - [Phase 05-monitoring-error-ux]: CampaignSheet log tab lazy-loads on first tab open only (activeTab === log && logEntries === null), cancelled-fetch flag prevents stale state
 - [Phase 06-stats-polish]: aggregateByMonth exported from ContactsPageClient for colocation and direct test import
+- [Phase 06-stats-polish]: layout.tsx main uses p-4 md:p-6 — single-source page padding eliminates double-padding on mobile
+- [Phase 06-stats-polish]: ContactDetailPanel SheetContent uses w-full sm:max-w-md overflow-y-auto, matching CampaignSheet width pattern
 
 ### Pending Todos
 
@@ -139,6 +142,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T14:31:31.264Z
-Stopped at: Completed 06-01-PLAN.md (growth table + aggregateByMonth)
+Last session: 2026-03-19T15:03:56.226Z
+Stopped at: Completed 06-02-PLAN.md (mobile responsive fixes — approved)
 Resume file: None

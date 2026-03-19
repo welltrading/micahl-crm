@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Campaign Management** - Campaign creation, event-relative message scheduling, timezone-correct UTC storage
 - [x] **Phase 4: Scheduler Engine** - Bree scheduler, GREEN API integration, idempotent send loop, broadcast capability (completed 2026-03-18)
 - [x] **Phase 5: Monitoring + Error UX** - Message status board, per-contact delivery view, error explanations, GREEN API health indicator (completed 2026-03-19)
-- [ ] **Phase 6: Stats + Polish** - Monthly growth stats, reschedule pending message, mobile RTL pass
+- [x] **Phase 6: Stats + Polish** - Monthly growth stats, reschedule pending message, mobile RTL pass (completed 2026-03-19)
 
 ## Phase Details
 
@@ -132,4 +132,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Campaign Management | 3/4 | In Progress|  |
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 3/3 | Complete   | 2026-03-19 |
-| 6. Stats + Polish | 1/2 | In Progress|  |
+| 6. Stats + Polish | 2/2 | Complete   | 2026-03-19 |
