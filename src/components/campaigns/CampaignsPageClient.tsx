@@ -11,15 +11,25 @@ import { CampaignSheet } from './CampaignSheet';
 interface CampaignsPageClientProps {
   campaigns: Campaign[];
   enrollmentCounts: Record<string, number>;
+  greenApiState: string;
 }
 
-export function CampaignsPageClient({ campaigns, enrollmentCounts }: CampaignsPageClientProps) {
+export function CampaignsPageClient({ campaigns, enrollmentCounts, greenApiState }: CampaignsPageClientProps) {
   const router = useRouter();
   const [selectedCampaign, setSelectedCampaign] = React.useState<Campaign | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      {greenApiState === 'notAuthorized' && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-center justify-between gap-4">
+          <span>גרין אפיאי מנותקת — הודעות לא ישלחו</span>
+          <a href="/hagdarot" className="font-medium underline underline-offset-2 whitespace-nowrap">
+            הגדרות
+          </a>
+        </div>
+      )}
+
       {/* Page header */}
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">קמפיינים</h1>
@@ -59,6 +69,7 @@ export function CampaignsPageClient({ campaigns, enrollmentCounts }: CampaignsPa
         campaign={selectedCampaign}
         enrollmentCount={selectedCampaign ? (enrollmentCounts[selectedCampaign.id] ?? 0) : 0}
         onClose={() => setSelectedCampaign(null)}
+        onDelete={() => { setSelectedCampaign(null); router.refresh(); }}
       />
     </div>
   );
