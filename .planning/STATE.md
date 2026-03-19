@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 03-05-PLAN.md (UTC scheduler field pipeline fix)
-last_updated: "2026-03-19T21:14:06.063Z"
+stopped_at: Completed 03-06-PLAN.md (CAMP-02/UX-02 design decision — option A accepted)
+last_updated: "2026-03-19T21:24:44.762Z"
 last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
   percent: 94
 ---
 
@@ -70,6 +70,7 @@ Progress: [█████████░] 94%
 | Phase 06-stats-polish P02 | 10 | 2 tasks | 3 files |
 | Phase 03-campaign-management P04 | 25 | 2 tasks | 6 files |
 | Phase 03-campaign-management P05 | 15 | 2 tasks | 3 files |
+| Phase 03-campaign-management P06 | 15 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,7 @@ Recent decisions affecting current work:
 - [Phase 03-campaign-management]: Per-slot save buttons (not global save) — prevents overwriting unsaved sibling slots, clearer UX
 - [Phase 03-campaign-management]: updateMessageTimeAction signature changed to (recordId, send_date, send_time) — callers pass Israel local values not ISO UTC strings
 - [Phase 03-campaign-management]: שליחה בשעה omitted from updateScheduledMessage when only content/title updated — no date+time to compute UTC from
+- [Phase 03-campaign-management]: CAMP-02/UX-02 design deviation accepted by Michal — flexible date pickers satisfy requirement intent per product owner decision (2026-03-19)
 
 ### Pending Todos
 
@@ -149,6 +151,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T21:14:06.050Z
-Stopped at: Completed 03-05-PLAN.md (UTC scheduler field pipeline fix)
+Last session: 2026-03-19T21:24:44.750Z
+Stopped at: Completed 03-06-PLAN.md (CAMP-02/UX-02 design decision — option A accepted)
 Resume file: None
