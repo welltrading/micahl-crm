@@ -7,19 +7,19 @@ import { normalizePhone } from './phone';
 
 export async function getContacts(): Promise<Contact[]> {
   const records = await airtableBase('Contacts')
-    .select({
-      sort: [{ field: 'נוצר בתאריך', direction: 'desc' }],
-    })
+    .select()
     .all();
 
-  return records.map((r) => ({
-    id: r.id,
-    full_name: r.fields['שם מלא'] as string,
-    phone: r.fields['טלפון'] as string,
-    joined_date: r.fields['תאריך הצטרפות'] as string | undefined,
-    notes: r.fields['הערות'] as string | undefined,
-    created_at: r.fields['נוצר בתאריך'] as string,
-  }));
+  return records
+    .map((r) => ({
+      id: r.id,
+      full_name: r.fields['שם מלא'] as string,
+      phone: r.fields['טלפון'] as string,
+      joined_date: r.fields['תאריך הצטרפות'] as string | undefined,
+      notes: r.fields['הערות'] as string | undefined,
+      created_at: r._rawJson.createdTime as string,
+    }))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
 export async function getContactById(id: string): Promise<Contact | null> {
@@ -31,7 +31,7 @@ export async function getContactById(id: string): Promise<Contact | null> {
       phone: record.fields['טלפון'] as string,
       joined_date: record.fields['תאריך הצטרפות'] as string | undefined,
       notes: record.fields['הערות'] as string | undefined,
-      created_at: record.fields['נוצר בתאריך'] as string,
+      created_at: record._rawJson.createdTime as string,
     };
   } catch {
     return null;
@@ -95,10 +95,13 @@ export async function getContactMessages(contactId: string): Promise<ScheduledMe
   return records.map((r) => ({
     id: r.id,
     campaign_id: r.fields['קמפיין'] as string[],
-    contact_id: r.fields['איש קשר'] as string[],
-    message_content: r.fields['תוכן ההודעה'] as string,
-    send_at: r.fields['שליחה בשעה'] as string,
-    offset_label: mapOffsetLabel(r.fields['תזמון'] as string),
+    contact_id: (r.fields['איש קשר'] ?? []) as string[],
+    title: (r.fields['כותרת'] as string) ?? '',
+    message_content: (r.fields['תוכן ההודעה'] as string) ?? '',
+    send_date: (r.fields['תאריך שליחה'] as string) ?? '',
+    send_time: (r.fields['שעת שליחה'] as string) ?? '09:00',
+    send_at: (r.fields['שליחה בשעה'] as string) ?? '',
+    slot_index: Number(r.fields['תזמון']) || 0,
     status: mapMessageStatus(r.fields['סטטוס'] as string),
     sent_at: r.fields['נשלח בשעה'] as string | undefined,
   }));
@@ -108,21 +111,6 @@ export async function getContactMessages(contactId: string): Promise<ScheduledMe
 
 function mapEnrollmentSource(source: string): 'manual' | 'webhook' {
   return source === 'Webhook' ? 'webhook' : 'manual';
-}
-
-function mapOffsetLabel(label: string): ScheduledMessage['offset_label'] {
-  switch (label) {
-    case 'שבוע לפני':
-      return 'week_before';
-    case 'יום לפני':
-      return 'day_before';
-    case 'בוקר האירוע':
-      return 'morning';
-    case 'חצי שעה לפני':
-      return 'half_hour';
-    default:
-      throw new Error(`Unknown offset label: "${label}"`);
-  }
 }
 
 function mapMessageStatus(status: string): ScheduledMessage['status'] {
