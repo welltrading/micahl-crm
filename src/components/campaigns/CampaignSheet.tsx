@@ -14,8 +14,11 @@ import {
   saveMessagesAction,
   deleteCampaignAction,
   broadcastAction,
+  getCampaignLogAction,
 } from '@/app/kampanim/actions';
 import { israelDateTimeToUTC, formatSendPreview } from '@/lib/timezone-client';
+import { mapErrorToHebrew, type MessageLogDisplayEntry } from '@/lib/airtable/message-log';
+import { formatPhoneDisplay } from '@/lib/airtable/phone';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,6 +97,13 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
   const [broadcastResult, setBroadcastResult] = React.useState<{ sent: number; failed: number } | null>(null);
   const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
 
+  // Tab + log state
+  const [activeTab, setActiveTab] = React.useState<'messages' | 'log'>('messages');
+  const [logEntries, setLogEntries] = React.useState<MessageLogDisplayEntry[] | null>(null);
+  const [logLoading, setLogLoading] = React.useState(false);
+  const [logError, setLogError] = React.useState<string | null>(null);
+  const [showFailuresOnly, setShowFailuresOnly] = React.useState(false);
+
   const [slots, setSlots] = React.useState<SlotState[]>([
     EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(),
   ]);
@@ -105,6 +115,15 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
     setBroadcastPending(false);
     setBroadcastResult(null);
     setBroadcastError(null);
+  }, [campaign?.id]);
+
+  // Reset log state when campaign changes (prevents stale data from previous campaign)
+  React.useEffect(() => {
+    setActiveTab('messages');
+    setLogEntries(null);
+    setLogError(null);
+    setLogLoading(false);
+    setShowFailuresOnly(false);
   }, [campaign?.id]);
 
   // Load saved messages when campaign changes
@@ -144,6 +163,21 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
 
     return () => { cancelled = true; };
   }, [campaign?.id]);
+
+  // Lazy-load log entries when log tab first opened
+  React.useEffect(() => {
+    if (activeTab !== 'log' || !campaign) return;
+    if (logEntries !== null) return;
+    let cancelled = false;
+    setLogLoading(true);
+    getCampaignLogAction(campaign.id).then((result) => {
+      if (cancelled) return;
+      setLogLoading(false);
+      if ('error' in result) { setLogError(result.error); return; }
+      setLogEntries(result.entries);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, campaign?.id]);
 
   // ---------------------------------------------------------------------------
   // Slot updater
@@ -257,151 +291,266 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
           )}
         </SheetHeader>
 
-        <div className="flex flex-col gap-6 p-4">
-          {loading && (
-            <p className="text-sm text-muted-foreground text-center py-4">טוען הודעות...</p>
-          )}
-
-          {!loading && slots.map((slot, i) => {
-            const preview = slot.date && slot.time
-              ? formatSendPreview(israelDateTimeToUTC(slot.date, slot.time))
-              : '';
-
-            return (
-              <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
-                {/* Slot header */}
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-muted-foreground">הודעה {i + 1}</span>
-                  {slot.status && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[slot.status]?.className ?? ''}`}>
-                      {STATUS_BADGE[slot.status]?.label ?? slot.status}
-                    </span>
-                  )}
-                </div>
-
-                {/* Title */}
-                <input
-                  type="text"
-                  dir="rtl"
-                  placeholder="כותרת (למשל: הזמנה ראשונית)"
-                  value={slot.title}
-                  onChange={(e) => updateSlot(i, { title: e.target.value })}
-                  className="w-full rounded-md border px-3 py-1.5 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-
-                {/* Date + Time row */}
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="date"
-                    value={slot.date}
-                    dir="ltr"
-                    onChange={(e) => updateSlot(i, { date: e.target.value })}
-                    className="flex-1 rounded-md border px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <select
-                    value={slot.time}
-                    onChange={(e) => updateSlot(i, { time: e.target.value })}
-                    className="rounded-md border px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    {TIME_OPTIONS.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Send preview */}
-                {preview && (
-                  <p className="text-xs text-muted-foreground">{preview}</p>
-                )}
-
-                {/* Message content */}
-                <textarea
-                  rows={3}
-                  dir="rtl"
-                  placeholder="תוכן ההודעה..."
-                  value={slot.content}
-                  onChange={(e) => updateSlot(i, { content: e.target.value })}
-                  className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-
-                {/* Per-slot feedback */}
-                {slotError[i] && (
-                  <p className="text-xs text-red-600">{slotError[i]}</p>
-                )}
-                {slotSuccess[i] && (
-                  <p className="text-xs text-green-600">✓ נשמר</p>
-                )}
-
-                {/* Per-slot save button */}
-                <button
-                  onClick={() => handleSaveSlot(i)}
-                  disabled={slotSaving[i] || loading}
-                  className="self-end rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {slotSaving[i] ? 'שומר...' : 'שמור הודעה'}
-                </button>
-              </div>
-            );
-          })}
+        {/* Tab navigation */}
+        <div className="flex gap-1 border-b pb-0 px-4 pt-2">
+          <button
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'messages' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('messages')}
+          >
+            הודעות
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'log' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('log')}
+          >
+            יומן שליחות
+          </button>
         </div>
 
-        {/* Broadcast section */}
-        <div className="border-t pt-4 px-4 pb-2 flex flex-col gap-3">
-          <h3 className="text-sm font-semibold">שליחת broadcast</h3>
+        {/* Messages tab */}
+        {activeTab === 'messages' && (
+          <>
+            <div className="flex flex-col gap-6 p-4">
+              {loading && (
+                <p className="text-sm text-muted-foreground text-center py-4">טוען הודעות...</p>
+              )}
 
-          <textarea
-            rows={3}
-            dir="rtl"
-            placeholder="הקלידי את תוכן ההודעה..."
-            value={broadcastMessage}
-            onChange={(e) => {
-              setBroadcastMessage(e.target.value);
-              setBroadcastResult(null);
-              setBroadcastError(null);
-            }}
-            disabled={broadcastPending}
-            className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-          />
+              {!loading && slots.map((slot, i) => {
+                const preview = slot.date && slot.time
+                  ? formatSendPreview(israelDateTimeToUTC(slot.date, slot.time))
+                  : '';
 
-          {!broadcastConfirm ? (
-            <button
-              onClick={() => setBroadcastConfirm(true)}
-              disabled={!broadcastMessage.trim() || broadcastPending}
-              className="self-end rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {broadcastPending ? 'שולח...' : 'שלח לכל הנרשמות'}
-            </button>
-          ) : (
-            <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
-              <p className="text-sm font-medium text-amber-800">שלח לכל הנרשמות?</p>
-              <p className="text-xs text-amber-700">ההודעה תישלח ל-{enrollmentCount} נרשמות. לא ניתן לבטל לאחר השליחה.</p>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setBroadcastConfirm(false)}
-                  className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-background"
-                >
-                  ביטול
-                </button>
-                <button
-                  onClick={handleBroadcastConfirm}
-                  className="rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90"
-                >
-                  אישור — שלח
-                </button>
-              </div>
+                return (
+                  <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+                    {/* Slot header */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-muted-foreground">הודעה {i + 1}</span>
+                      {slot.status && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[slot.status]?.className ?? ''}`}>
+                          {STATUS_BADGE[slot.status]?.label ?? slot.status}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <input
+                      type="text"
+                      dir="rtl"
+                      placeholder="כותרת (למשל: הזמנה ראשונית)"
+                      value={slot.title}
+                      onChange={(e) => updateSlot(i, { title: e.target.value })}
+                      className="w-full rounded-md border px-3 py-1.5 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+
+                    {/* Date + Time row */}
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="date"
+                        value={slot.date}
+                        dir="ltr"
+                        onChange={(e) => updateSlot(i, { date: e.target.value })}
+                        className="flex-1 rounded-md border px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <select
+                        value={slot.time}
+                        onChange={(e) => updateSlot(i, { time: e.target.value })}
+                        className="rounded-md border px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        {TIME_OPTIONS.map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Send preview */}
+                    {preview && (
+                      <p className="text-xs text-muted-foreground">{preview}</p>
+                    )}
+
+                    {/* Message content */}
+                    <textarea
+                      rows={3}
+                      dir="rtl"
+                      placeholder="תוכן ההודעה..."
+                      value={slot.content}
+                      onChange={(e) => updateSlot(i, { content: e.target.value })}
+                      className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+
+                    {/* Per-slot feedback */}
+                    {slotError[i] && (
+                      <p className="text-xs text-red-600">{slotError[i]}</p>
+                    )}
+                    {slotSuccess[i] && (
+                      <p className="text-xs text-green-600">✓ נשמר</p>
+                    )}
+
+                    {/* Per-slot save button */}
+                    <button
+                      onClick={() => handleSaveSlot(i)}
+                      disabled={slotSaving[i] || loading}
+                      className="self-end rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {slotSaving[i] ? 'שומר...' : 'שמור הודעה'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
-          )}
 
-          {broadcastResult && (
-            <p className="text-sm text-green-700">
-              נשלחו {broadcastResult.sent} הודעות בהצלחה{broadcastResult.failed > 0 ? `, ${broadcastResult.failed} נכשלו` : ''}
-            </p>
-          )}
+            {/* Broadcast section */}
+            <div className="border-t pt-4 px-4 pb-2 flex flex-col gap-3">
+              <h3 className="text-sm font-semibold">שליחת broadcast</h3>
 
-          {broadcastError && (
-            <p className="text-sm text-red-600">{broadcastError}</p>
-          )}
-        </div>
+              <textarea
+                rows={3}
+                dir="rtl"
+                placeholder="הקלידי את תוכן ההודעה..."
+                value={broadcastMessage}
+                onChange={(e) => {
+                  setBroadcastMessage(e.target.value);
+                  setBroadcastResult(null);
+                  setBroadcastError(null);
+                }}
+                disabled={broadcastPending}
+                className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              />
+
+              {!broadcastConfirm ? (
+                <button
+                  onClick={() => setBroadcastConfirm(true)}
+                  disabled={!broadcastMessage.trim() || broadcastPending}
+                  className="self-end rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {broadcastPending ? 'שולח...' : 'שלח לכל הנרשמות'}
+                </button>
+              ) : (
+                <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-sm font-medium text-amber-800">שלח לכל הנרשמות?</p>
+                  <p className="text-xs text-amber-700">ההודעה תישלח ל-{enrollmentCount} נרשמות. לא ניתן לבטל לאחר השליחה.</p>
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => setBroadcastConfirm(false)}
+                      className="rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-background"
+                    >
+                      ביטול
+                    </button>
+                    <button
+                      onClick={handleBroadcastConfirm}
+                      className="rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90"
+                    >
+                      אישור — שלח
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {broadcastResult && (
+                <p className="text-sm text-green-700">
+                  נשלחו {broadcastResult.sent} הודעות בהצלחה{broadcastResult.failed > 0 ? `, ${broadcastResult.failed} נכשלו` : ''}
+                </p>
+              )}
+
+              {broadcastError && (
+                <p className="text-sm text-red-600">{broadcastError}</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Log tab */}
+        {activeTab === 'log' && (
+          <div className="flex flex-col gap-4 p-4">
+            {/* Loading state */}
+            {logLoading && (
+              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+                טוענת יומן שליחות...
+              </div>
+            )}
+
+            {/* Error state */}
+            {logError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {logError}
+              </div>
+            )}
+
+            {/* Log content */}
+            {logEntries !== null && !logLoading && (
+              <>
+                {/* Failures toggle */}
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showFailuresOnly}
+                      onChange={(e) => setShowFailuresOnly(e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    רק כשלונות
+                  </label>
+                  <span className="text-xs text-muted-foreground">
+                    ({(showFailuresOnly ? logEntries.filter(e => e.status === 'failed') : logEntries).length} רשומות)
+                  </span>
+                </div>
+
+                {/* Empty state */}
+                {logEntries.length === 0 ? (
+                  <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+                    אין רשומות יומן עדיין לקמפיין זה
+                  </div>
+                ) : (
+                  /* Log table */
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-muted-foreground">
+                          <th className="pb-2 text-right font-medium pe-3">שם מלא</th>
+                          <th className="pb-2 text-right font-medium pe-3">טלפון</th>
+                          <th className="pb-2 text-right font-medium pe-3">סטטוס</th>
+                          <th className="pb-2 text-right font-medium pe-3">זמן שליחה</th>
+                          <th className="pb-2 text-right font-medium">סיבת שגיאה</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(showFailuresOnly ? logEntries.filter(e => e.status === 'failed') : logEntries).map((entry) => (
+                          <tr key={entry.id} className="border-b last:border-0">
+                            <td className="py-2 pe-3">{entry.full_name ?? '—'}</td>
+                            <td className="py-2 pe-3" dir="ltr">
+                              {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
+                            </td>
+                            <td className="py-2 pe-3">
+                              {STATUS_BADGE[entry.status] ? (
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[entry.status].className}`}>
+                                  {STATUS_BADGE[entry.status].label}
+                                </span>
+                              ) : entry.status}
+                            </td>
+                            <td className="py-2 pe-3 text-muted-foreground tabular-nums" dir="ltr">
+                              {entry.logged_at
+                                ? new Date(entry.logged_at).toLocaleString('he-IL', {
+                                    timeZone: 'Asia/Jerusalem',
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : '—'}
+                            </td>
+                            <td className="py-2 text-red-600 text-xs max-w-[200px]">
+                              {entry.error_message ? mapErrorToHebrew(entry.error_message) : ''}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Sticky footer */}
         <div className="sticky bottom-0 border-t bg-background p-4 flex flex-col gap-2">
