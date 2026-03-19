@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02 GREEN API disconnect banner
-last_updated: "2026-03-19T12:00:00.000Z"
+stopped_at: "Checkpoint 05-03 Task 3: awaiting human-verify for יומן שליחות tab"
+last_updated: "2026-03-19T12:00:42.359Z"
 last_activity: 2026-03-19 — 05-02 GREEN API disconnect banner on campaigns page complete
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 94
 ---
 
@@ -64,6 +64,7 @@ Progress: [█████████░] 94%
 | Phase 04-scheduler-engine P03 | 8 | 2 tasks | 2 files |
 | Phase 04-scheduler-engine P04 | 2 | 1 tasks | 1 files |
 | Phase 05-monitoring-error-ux P01 | 6 | 2 tasks | 3 files |
+| Phase 05-monitoring-error-ux P03 | 8 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,7 @@ Recent decisions affecting current work:
 - [Phase 05-monitoring-error-ux]: jest.spyOn for action tests avoids jest.mock hoisting conflict with ../client mock
 - [Phase 05-monitoring-error-ux]: getMessageLogByCampaign sorts client-side by logged_at — avoids Airtable sort field name ambiguity
 - [Phase 05-monitoring-error-ux]: GREEN API banner only shown for 'notAuthorized' — 'unknown' (missing env vars / network error) is silent to avoid dev noise; banner is persistent/non-dismissible
+- [Phase 05-monitoring-error-ux]: CampaignSheet log tab lazy-loads on first tab open only (activeTab === log && logEntries === null), cancelled-fetch flag prevents stale state
 
 ### Pending Todos
 
@@ -133,6 +135,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T11:39:49.299Z
-Stopped at: Completed 05-01 message log data layer
+Last session: 2026-03-19T12:00:25.091Z
+Stopped at: Checkpoint 05-03 Task 3: awaiting human-verify for יומן שליחות tab
 Resume file: None
