@@ -14,14 +14,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl">
+    <html lang="he" dir="rtl" suppressHydrationWarning>
       <body className="antialiased">
         {/* RTL flex: dir=rtl on <html> means flex-row places sidebar on the right automatically */}
         <div className="flex min-h-screen">
           <Sidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <MobileHeader />
-            <main className="flex-1 p-6">{children}</main>
+            <main className="flex-1 p-4 md:p-6">{children}</main>
           </div>
         </div>
       </body>

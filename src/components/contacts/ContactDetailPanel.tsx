@@ -16,12 +16,6 @@ interface ContactDetailPanelProps {
   onClose: () => void;
 }
 
-const OFFSET_LABEL_HE: Record<ScheduledMessage['offset_label'], string> = {
-  week_before: 'שבוע לפני',
-  day_before: 'יום לפני',
-  morning: 'בוקר האירוע',
-  half_hour: 'חצי שעה לפני',
-};
 
 const STATUS_LABEL_HE: Record<ScheduledMessage['status'], string> = {
   pending: 'ממתינה',
@@ -69,7 +63,7 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
 
   return (
     <Sheet open={!!contact} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="left">
+      <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{contact?.full_name}</SheetTitle>
         </SheetHeader>
@@ -119,7 +113,7 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
                                 key={msg.id}
                                 className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-sm"
                               >
-                                <span>{OFFSET_LABEL_HE[msg.offset_label]}</span>
+                                <span>{msg.title || `הודעה ${msg.slot_index}`}</span>
                                 <span
                                   className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASS[msg.status]}`}
                                 >
@@ -129,7 +123,7 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
                                   dir="ltr"
                                   className="text-xs text-muted-foreground"
                                 >
-                                  {formatDate(msg.send_at)}
+                                  {msg.send_date}{msg.send_time ? ` ${msg.send_time}` : ''}
                                 </span>
                               </div>
                             ))}
