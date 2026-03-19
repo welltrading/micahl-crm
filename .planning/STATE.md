@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 06-02-PLAN.md (mobile responsive fixes — approved)
-last_updated: "2026-03-19T15:12:15.260Z"
+stopped_at: Completed 03-04-PLAN.md (CampaignSheet with 4 message slots)
+last_updated: "2026-03-19T20:37:25.254Z"
 last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 20
-  completed_plans: 19
+  completed_plans: 20
   percent: 94
 ---
 
@@ -68,6 +68,7 @@ Progress: [█████████░] 94%
 | Phase 05-monitoring-error-ux P03 | 15 | 3 tasks | 1 files |
 | Phase 06-stats-polish P01 | 4 | 1 tasks | 2 files |
 | Phase 06-stats-polish P02 | 10 | 2 tasks | 3 files |
+| Phase 03-campaign-management P04 | 25 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,9 @@ Recent decisions affecting current work:
 - [Phase 06-stats-polish]: aggregateByMonth exported from ContactsPageClient for colocation and direct test import
 - [Phase 06-stats-polish]: layout.tsx main uses p-4 md:p-6 — single-source page padding eliminates double-padding on mobile
 - [Phase 06-stats-polish]: ContactDetailPanel SheetContent uses w-full sm:max-w-md overflow-y-auto, matching CampaignSheet width pattern
+- [Phase 03-campaign-management]: Flexible slots with date/time per slot instead of fixed offset labels — user has full control over send timing
+- [Phase 03-campaign-management]: timezone-client.ts: client-safe Intl.DateTimeFormat wrapper for browser live preview — server-only computeSendAt not importable from client
+- [Phase 03-campaign-management]: Per-slot save buttons (not global save) — prevents overwriting unsaved sibling slots, clearer UX
 
 ### Pending Todos
 
@@ -142,6 +146,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:03:56.226Z
-Stopped at: Completed 06-02-PLAN.md (mobile responsive fixes — approved)
+Last session: 2026-03-19T20:37:25.246Z
+Stopped at: Completed 03-04-PLAN.md (CampaignSheet with 4 message slots)
 Resume file: None
