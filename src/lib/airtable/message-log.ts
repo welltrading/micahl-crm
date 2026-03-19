@@ -4,6 +4,9 @@
  */
 
 import { airtableBase } from './client';
+import type { MessageLogDisplayEntry } from './message-log-client';
+export type { MessageLogDisplayEntry } from './message-log-client';
+export { mapErrorToHebrew } from './message-log-client';
 
 interface MessageLogEntry {
   scheduled_message_id: string;
@@ -11,20 +14,6 @@ interface MessageLogEntry {
   campaign_id: string;
   status: 'sent' | 'failed';
   green_api_response?: string;
-  error_message?: string;
-}
-
-/**
- * Display entry type for rendering MessageLog records in the UI.
- * Returned by getMessageLogByCampaign.
- */
-export interface MessageLogDisplayEntry {
-  id: string;
-  contact_id: string;
-  full_name?: string;   // Airtable lookup field 'שם מלא' on MessageLog (if configured)
-  phone?: string;       // Airtable lookup field 'טלפון' on MessageLog (if configured)
-  status: 'sent' | 'failed';
-  logged_at: string;    // from (r as any)._rawJson?.createdTime ?? ''
   error_message?: string;
 }
 
@@ -90,29 +79,4 @@ export async function getMessageLogByCampaign(
   });
 
   return mapped.sort((a, b) => b.logged_at.localeCompare(a.logged_at));
-}
-
-/**
- * Maps a raw GREEN API error string to a user-friendly Hebrew message.
- * Returns empty string for undefined/empty input.
- */
-export function mapErrorToHebrew(rawError: string | undefined): string {
-  if (!rawError) return '';
-  const lower = rawError.toLowerCase();
-
-  if (lower.includes('401') || lower.includes('notauthorized') || lower.includes('unauthorized')) {
-    return 'גרין אפיאי מנותקת — הודעות לא נשלחות, נא להתחבר מחדש בהגדרות';
-  }
-  if (lower.includes('403') || lower.includes('not registered') || lower.includes('notregistered')) {
-    return 'מספר הטלפון לא קיים בוואצאפ — בדקי את המספר בכרטיסיית אנשי קשר';
-  }
-  if (
-    lower.includes('timeout') ||
-    lower.includes('econnrefused') ||
-    lower.includes('network') ||
-    lower.includes('fetch')
-  ) {
-    return 'בעיית תקשורת זמנית — ההודעה לא נשלחה, נסי שוב מאוחר יותר';
-  }
-  return 'שגיאה לא ידועה — פני לתמיכה אם הבעיה חוזרת';
 }

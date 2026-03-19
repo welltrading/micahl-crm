@@ -17,7 +17,7 @@ import {
   getCampaignLogAction,
 } from '@/app/kampanim/actions';
 import { israelDateTimeToUTC, formatSendPreview } from '@/lib/timezone-client';
-import { mapErrorToHebrew, type MessageLogDisplayEntry } from '@/lib/airtable/message-log';
+import { mapErrorToHebrew, type MessageLogDisplayEntry } from '@/lib/airtable/message-log-client';
 import { formatPhoneDisplay } from '@/lib/airtable/phone';
 
 // ---------------------------------------------------------------------------
