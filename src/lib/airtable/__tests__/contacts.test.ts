@@ -45,12 +45,12 @@ describe('getContacts', () => {
   it('maps Airtable record fields correctly to Contact interface', async () => {
     const mockRecord = {
       id: 'rec001',
+      _rawJson: { createdTime: '2026-03-01T10:00:00.000Z' },
       fields: {
         'שם מלא': 'רחל כהן',
         'טלפון': '972501234567',
         'תאריך הצטרפות': '2026-03-01T00:00:00.000Z',
         'הערות': 'לקוחה חשובה',
-        'נוצר בתאריך': '2026-03-01T10:00:00.000Z',
       },
     };
     mockAll.mockResolvedValueOnce([mockRecord]);
@@ -71,10 +71,10 @@ describe('getContacts', () => {
   it('handles optional fields missing gracefully', async () => {
     const mockRecord = {
       id: 'rec002',
+      _rawJson: { createdTime: '2026-03-10T00:00:00.000Z' },
       fields: {
         'שם מלא': 'מרים לוי',
         'טלפון': '972509876543',
-        'נוצר בתאריך': '2026-03-10T00:00:00.000Z',
       },
     };
     mockAll.mockResolvedValueOnce([mockRecord]);
@@ -102,10 +102,10 @@ describe('getContactById', () => {
   it('returns Contact when record exists', async () => {
     const mockRecord = {
       id: 'rec003',
+      _rawJson: { createdTime: '2026-03-15T00:00:00.000Z' },
       fields: {
         'שם מלא': 'דינה אברהם',
         'טלפון': '972541234567',
-        'נוצר בתאריך': '2026-03-15T00:00:00.000Z',
       },
     };
     mockFind.mockResolvedValueOnce(mockRecord);
