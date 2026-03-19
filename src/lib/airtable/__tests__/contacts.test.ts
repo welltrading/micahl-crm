@@ -314,20 +314,20 @@ describe('getContactMessages', () => {
       },
     });
 
-    const cases: Array<[string, ScheduledMessage['offset_label']]> = [
-      ['שבוע לפני', 'week_before'],
-      ['יום לפני', 'day_before'],
-      ['בוקר האירוע', 'morning'],
-      ['חצי שעה לפני', 'half_hour'],
+    const cases: Array<[string, number]> = [
+      ['1', 1],
+      ['2', 2],
+      ['3', 3],
+      ['4', 4],
     ];
 
-    for (const [hebrewLabel, expectedLabel] of cases) {
+    for (const [slotStr, expectedIndex] of cases) {
       jest.clearAllMocks();
-      mockAll.mockResolvedValueOnce([makeRecord('recMsg1', hebrewLabel)]);
+      mockAll.mockResolvedValueOnce([makeRecord('recMsg1', slotStr)]);
 
       const result = await getContactMessages('recABC');
 
-      expect(result[0].offset_label).toBe(expectedLabel);
+      expect(result[0].slot_index).toBe(expectedIndex);
     }
   });
 
@@ -370,7 +370,8 @@ describe('getContactMessages', () => {
           'איש קשר': ['recABC'],
           'תוכן ההודעה': 'שלום! תזכורת לאירוע',
           'שליחה בשעה': '2026-04-01T08:00:00.000Z',
-          'תזמון': 'בוקר האירוע',
+          'תזמון': '3',
+          'כותרת': 'בוקר האירוע',
           'סטטוס': 'נשלחה',
           'נשלח בשעה': '2026-04-01T08:01:00.000Z',
         },
@@ -385,9 +386,11 @@ describe('getContactMessages', () => {
       id: 'recMsg3',
       campaign_id: ['recCamp1'],
       contact_id: ['recABC'],
+      title: 'בוקר האירוע',
       message_content: 'שלום! תזכורת לאירוע',
-      send_at: '2026-04-01T08:00:00.000Z',
-      offset_label: 'morning',
+      send_date: '',
+      send_time: '09:00',
+      slot_index: 3,
       status: 'sent',
       sent_at: '2026-04-01T08:01:00.000Z',
     });
@@ -399,5 +402,82 @@ describe('getContactMessages', () => {
     const result = await getContactMessages('recNONE');
 
     expect(result).toEqual([]);
+  });
+});
+
+// ─── aggregateByMonth pure function tests ────────────────────────────────────
+
+import { aggregateByMonth } from '@/components/contacts/ContactsPageClient';
+
+function makeContact(created_at: string): import('../types').Contact {
+  return { id: 'rec', full_name: 'Test', phone: '972500000000', created_at };
+}
+
+describe('aggregateByMonth', () => {
+  it('groups contacts by month, newest first', () => {
+    const contacts = [
+      makeContact('2026-01-05T10:00:00.000Z'),
+      makeContact('2026-01-15T10:00:00.000Z'),
+      makeContact('2026-01-25T10:00:00.000Z'),
+      makeContact('2026-02-03T10:00:00.000Z'),
+      makeContact('2026-02-14T10:00:00.000Z'),
+    ];
+    const result = aggregateByMonth(contacts, '', '');
+    expect(result).toEqual([
+      { key: '2026-02', count: 2 },
+      { key: '2026-01', count: 3 },
+    ]);
+  });
+
+  it('excludes contacts outside from/to date range', () => {
+    const contacts = [
+      makeContact('2026-01-10T10:00:00.000Z'),
+      makeContact('2026-02-10T10:00:00.000Z'),
+      makeContact('2026-03-10T10:00:00.000Z'),
+    ];
+    const result = aggregateByMonth(contacts, '2026-02-01', '2026-02-28');
+    expect(result).toEqual([{ key: '2026-02', count: 1 }]);
+  });
+
+  it('does not include months with zero contacts', () => {
+    const contacts = [
+      makeContact('2026-01-10T10:00:00.000Z'),
+      makeContact('2026-03-10T10:00:00.000Z'),
+    ];
+    const result = aggregateByMonth(contacts, '', '');
+    // February is missing — no zero-count rows
+    expect(result.every((r) => r.count > 0)).toBe(true);
+    expect(result.find((r) => r.key === '2026-02')).toBeUndefined();
+  });
+
+  it('returns empty array for empty contacts', () => {
+    expect(aggregateByMonth([], '', '')).toEqual([]);
+  });
+
+  it('includes all contacts when from and to are both empty', () => {
+    const contacts = [
+      makeContact('2025-11-01T10:00:00.000Z'),
+      makeContact('2026-01-01T10:00:00.000Z'),
+    ];
+    const result = aggregateByMonth(contacts, '', '');
+    expect(result).toHaveLength(2);
+  });
+
+  it('returns single-element array for a single contact', () => {
+    const contacts = [makeContact('2026-03-07T10:00:00.000Z')];
+    const result = aggregateByMonth(contacts, '', '');
+    expect(result).toEqual([{ key: '2026-03', count: 1 }]);
+  });
+
+  it('filters 4-month span to only 2 months when date range is applied', () => {
+    const contacts = [
+      makeContact('2026-01-10T10:00:00.000Z'),
+      makeContact('2026-02-10T10:00:00.000Z'),
+      makeContact('2026-03-10T10:00:00.000Z'),
+      makeContact('2026-04-10T10:00:00.000Z'),
+    ];
+    const result = aggregateByMonth(contacts, '2026-02-01', '2026-03-31');
+    expect(result).toHaveLength(2);
+    expect(result.map((r) => r.key)).toEqual(['2026-03', '2026-02']);
   });
 });
