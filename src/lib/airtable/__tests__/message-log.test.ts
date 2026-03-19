@@ -3,6 +3,9 @@
  * TDD RED → GREEN cycle for Phase 5 monitoring data layer.
  */
 
+// ---------------------------------------------------------------------------
+// Mock setup — must be at top before any imports
+// ---------------------------------------------------------------------------
 const mockAll = jest.fn();
 const mockCreate = jest.fn();
 const mockSelect = jest.fn(() => ({ all: mockAll }));
@@ -13,7 +16,11 @@ const mockTable = jest.fn(() => ({
 
 jest.mock('../client', () => ({ airtableBase: mockTable }));
 
+// ---------------------------------------------------------------------------
+// Imports
+// ---------------------------------------------------------------------------
 import { getMessageLogByCampaign, mapErrorToHebrew } from '../message-log';
+import { getCampaignLogAction } from '../../../app/kampanim/actions';
 
 // ---------------------------------------------------------------------------
 // Shared mock record factory
@@ -23,9 +30,9 @@ function makeRecord(overrides: Partial<{
   createdTime: string;
   status: string;
   contactId: string;
-  fullName: string;
-  phone: string;
-  errorMessage: string;
+  fullName: string | undefined;
+  phone: string | undefined;
+  errorMessage: string | undefined;
 }> = {}) {
   const {
     id = 'recABC',
@@ -34,7 +41,7 @@ function makeRecord(overrides: Partial<{
     contactId = 'recContact1',
     fullName = 'שרה כהן',
     phone = '0501234567',
-    errorMessage,
+    errorMessage = undefined,
   } = overrides;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +67,8 @@ function makeRecord(overrides: Partial<{
 describe('getMessageLogByCampaign', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockTable.mockImplementation(() => ({ select: mockSelect, create: mockCreate }));
+    mockSelect.mockImplementation(() => ({ all: mockAll }));
   });
 
   it('calls airtableBase with MessageLog table', async () => {
@@ -71,9 +80,10 @@ describe('getMessageLogByCampaign', () => {
   it('uses FIND+ARRAYJOIN filterByFormula with campaignId', async () => {
     mockAll.mockResolvedValue([]);
     await getMessageLogByCampaign('recCampaign123');
-    const selectCall = mockSelect.mock.calls[0][0];
-    expect(selectCall.filterByFormula).toContain('recCampaign123');
-    expect(selectCall.filterByFormula).toMatch(/FIND.*ARRAYJOIN/i);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectCall = (mockSelect.mock.calls as any[][])[0]?.[0] as { filterByFormula: string } | undefined;
+    expect(selectCall?.filterByFormula).toContain('recCampaign123');
+    expect(selectCall?.filterByFormula).toMatch(/FIND.*ARRAYJOIN/i);
   });
 
   it('maps "נשלחה" status to "sent"', async () => {
@@ -126,7 +136,7 @@ describe('getMessageLogByCampaign', () => {
 });
 
 // ---------------------------------------------------------------------------
-// mapErrorToHebrew
+// mapErrorToHebrew — pure function, no mocks needed
 // ---------------------------------------------------------------------------
 describe('mapErrorToHebrew', () => {
   it('returns empty string for undefined input', () => {
@@ -155,21 +165,20 @@ describe('mapErrorToHebrew', () => {
 });
 
 // ---------------------------------------------------------------------------
-// getCampaignLogAction (server action)
+// getCampaignLogAction — mock getMessageLogByCampaign via jest.spyOn
 // ---------------------------------------------------------------------------
-jest.mock('../message-log', () => ({
-  ...jest.requireActual('../message-log'),
-  getMessageLogByCampaign: jest.fn(),
-}));
-
-import { getCampaignLogAction } from '../../../app/kampanim/actions';
-import { getMessageLogByCampaign as mockGetLog } from '../message-log';
-
-const mockGetLogFn = mockGetLog as jest.MockedFunction<typeof getMessageLogByCampaign>;
-
 describe('getCampaignLogAction', () => {
+  let getLogSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const messageLogModule = require('../message-log');
+    getLogSpy = jest.spyOn(messageLogModule, 'getMessageLogByCampaign');
+  });
+
+  afterEach(() => {
+    getLogSpy.mockRestore();
   });
 
   it('returns { error } when campaignId is empty', async () => {
@@ -186,14 +195,14 @@ describe('getCampaignLogAction', () => {
         logged_at: '2026-03-18T10:00:00.000Z',
       },
     ];
-    mockGetLogFn.mockResolvedValue(fakeEntries);
+    getLogSpy.mockResolvedValue(fakeEntries);
 
     const result = await getCampaignLogAction('recCampaign1');
     expect(result).toEqual({ entries: fakeEntries });
   });
 
   it('returns { error } when getMessageLogByCampaign throws', async () => {
-    mockGetLogFn.mockRejectedValue(new Error('Airtable down'));
+    getLogSpy.mockRejectedValue(new Error('Airtable down'));
 
     const result = await getCampaignLogAction('recCampaign1');
     expect(result).toHaveProperty('error');

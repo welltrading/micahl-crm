@@ -1,6 +1,7 @@
 'use server';
 
 import { createCampaign, deleteCampaign } from '@/lib/airtable/campaigns';
+import { getMessageLogByCampaign, type MessageLogDisplayEntry } from '@/lib/airtable/message-log';
 import {
   getScheduledMessagesByCampaign,
   createScheduledMessage,
@@ -165,5 +166,18 @@ export async function broadcastAction(
   } catch (err) {
     console.error('broadcastAction error:', err);
     return { error: 'שגיאה בשליחת ה-broadcast. נסי שנית.' };
+  }
+}
+
+export async function getCampaignLogAction(
+  campaignId: string
+): Promise<{ entries: MessageLogDisplayEntry[] } | { error: string }> {
+  try {
+    if (!campaignId) return { error: 'campaignId is required' };
+    const entries = await getMessageLogByCampaign(campaignId);
+    return { entries };
+  } catch (err) {
+    console.error('getCampaignLogAction error:', err);
+    return { error: 'שגיאה בטעינת יומן השליחות' };
   }
 }
