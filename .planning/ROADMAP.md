@@ -100,7 +100,12 @@ Plans:
   2. מיכל יכולה לראות ברשימה מי לא קיבל הודעה לקמפיין ספציפי — שם + טלפון + סיבת כשל
   3. כשGREEN API מנותקת, הדאשבורד מציג הסבר בעברית פשוטה עם הוראת פעולה ("GREEN API מנותקת — נא להתחבר מחדש ב-Settings")
   4. כשהודעה נכשלת, הסיבה מוצגת בעברית ידידותית — לא "error code 403" אלא "מספר הטלפון לא קיים בוואצאפ"
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Airtable read layer: getMessageLogByCampaign, mapErrorToHebrew, getCampaignLogAction + tests (Wave 1)
+- [ ] 05-02-PLAN.md — GREEN API disconnect banner on campaigns page (Wave 1, parallel)
+- [ ] 05-03-PLAN.md — CampaignSheet "יומן שליחות" tab: lazy load, table, failures toggle (Wave 2)
 
 ### Phase 6: Stats + Polish
 **Goal**: מיכל רואה צמיחת קהל לאורך זמן, הממשק עובד היטב במובייל, ועריכת זמן שליחה ממתינה עובדת חלק
@@ -122,5 +127,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Contact CRM | 4/4 | Complete   | 2026-03-18 |
 | 3. Campaign Management | 3/4 | In Progress|  |
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
-| 5. Monitoring + Error UX | 0/TBD | Not started | - |
+| 5. Monitoring + Error UX | 0/3 | Not started | - |
 | 6. Stats + Polish | 0/TBD | Not started | - |
