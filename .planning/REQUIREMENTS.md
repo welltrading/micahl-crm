@@ -10,7 +10,7 @@
 - [x] **UX-01**: כל פעולה שגרתית (יצירת קמפיין, הגדרת הודעות, הוספת נרשמת) מתבצעת דרך ממשק ויזואלי ברור — ללא עריכת קוד, ללא גישה ל-Airtable ישירות
 - [x] **UX-02**: הגדרת זמני שליחה (שבוע לפני / יום לפני / בוקר / חצי שעה לפני) מתבצעת בבחירה ויזואלית — לא בכתיבת תאריכים ידנית
 - [x] **UX-03**: בעת הקמת אינטגרציה חדשה (GREEN API, MAKE.com webhook) המערכת מספקת הנחיות step-by-step בתוך הדאשבורד
-- [ ] **UX-04**: שגיאות ובעיות (הודעה שנכשלה, GREEN API מנותק) מוסברות בשפה פשוטה עם פעולה מוצעת — לא קודי שגיאה טכניים
+- [x] **UX-04**: שגיאות ובעיות (הודעה שנכשלה, GREEN API מנותק) מוסברות בשפה פשוטה עם פעולה מוצעת — לא קודי שגיאה טכניים
 
 ### Infrastructure (תשתית)
 
@@ -44,7 +44,7 @@
 
 ### Monitoring — מעקב
 
-- [ ] **MON-01**: מיכל יכולה לראות לוג שליחות — כל הודעה שנשלחה/נכשלה עם timestamp
+- [x] **MON-01**: מיכל יכולה לראות לוג שליחות — כל הודעה שנשלחה/נכשלה עם timestamp
 - [ ] **MON-02**: מיכל יכולה לראות מי לא קיבלה הודעה (נכשלה) לכל קמפיין
 - [ ] **MON-03**: סטטוס חיבור GREEN API מוצג בדאשבורד (health check לפני כל batch)
 
@@ -85,7 +85,7 @@
 | UX-01 | Phase 2 | Complete |
 | UX-02 | Phase 3 | Complete |
 | UX-03 | Phase 1 | Complete |
-| UX-04 | Phase 5 | Pending |
+| UX-04 | Phase 5 | Complete |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
@@ -104,7 +104,7 @@
 | MSG-02 | Phase 4 | Complete |
 | MSG-03 | Phase 4 | Complete |
 | MSG-04 | Phase 4 | Complete |
-| MON-01 | Phase 5 | Pending |
+| MON-01 | Phase 5 | Complete |
 | MON-02 | Phase 5 | Pending |
 | MON-03 | Phase 5 | Pending |
 

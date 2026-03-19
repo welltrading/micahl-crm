@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-19T08:31:26.498Z"
+stopped_at: Completed 05-01 message log data layer
+last_updated: "2026-03-19T11:39:49.307Z"
 last_activity: 2026-03-18 — 04-03 broadcastAction + broadcast UI complete
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 15
-  completed_plans: 14
+  total_plans: 18
+  completed_plans: 15
   percent: 91
 ---
 
@@ -63,6 +63,7 @@ Progress: [█████████░] 91%
 | Phase 04-scheduler-engine P02 | 3 | 2 tasks | 6 files |
 | Phase 04-scheduler-engine P03 | 8 | 2 tasks | 2 files |
 | Phase 04-scheduler-engine P04 | 2 | 1 tasks | 1 files |
+| Phase 05-monitoring-error-ux P01 | 6 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,8 @@ Recent decisions affecting current work:
 - [Phase 04-scheduler-engine]: Two-step confirmation inline amber box prevents accidental mass sends — shows enrollment count before confirming
 - [Phase 04-scheduler-engine]: force-dynamic on hagdarot page ensures GREEN API status is always fetched live, not cached at build time
 - [Phase 04-scheduler-engine]: Three-state GREEN API badge (green/red/gray) — gray for unknown covers missing env vars and network errors with actionable Hebrew guidance
+- [Phase 05-monitoring-error-ux]: jest.spyOn for action tests avoids jest.mock hoisting conflict with ../client mock
+- [Phase 05-monitoring-error-ux]: getMessageLogByCampaign sorts client-side by logged_at — avoids Airtable sort field name ambiguity
 
 ### Pending Todos
 
@@ -129,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T08:31:26.466Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-monitoring-error-ux/05-CONTEXT.md
+Last session: 2026-03-19T11:39:49.299Z
+Stopped at: Completed 05-01 message log data layer
+Resume file: None
