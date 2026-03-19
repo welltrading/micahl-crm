@@ -67,10 +67,12 @@ export function localIsraelToUTC(dateISO: string, timeHHMM: string): string {
  * @param userChosenHour - HH:MM string for 'morning' offset; ignored for others
  * @returns UTC ISO8601 string for when the message should be sent
  */
+type OffsetLabel = 'week_before' | 'day_before' | 'morning' | 'half_hour';
+
 export function computeSendAt(
   eventDateISO: string,
   eventTimeHHMM: string,
-  offset: ScheduledMessage['offset_label'],
+  offset: OffsetLabel,
   userChosenHour?: string,
 ): string {
   type OffsetConfig = {
@@ -78,7 +80,7 @@ export function computeSendAt(
     fixedHour: number | null;
   };
 
-  const OFFSET_CONFIGS: Record<ScheduledMessage['offset_label'], OffsetConfig> = {
+  const OFFSET_CONFIGS: Record<OffsetLabel, OffsetConfig> = {
     week_before: { daysOffset: -7, fixedHour: 9 },   // 09:00 fixed
     day_before:  { daysOffset: -1, fixedHour: 9 },   // 09:00 fixed
     morning:     { daysOffset: 0,  fixedHour: null }, // user-chosen

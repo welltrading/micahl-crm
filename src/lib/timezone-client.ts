@@ -115,3 +115,11 @@ export function computeHalfHourTime(eventTimeHHMM: string): string {
   const m = totalMin % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
+
+/**
+ * Convert a user-picked Israel date (YYYY-MM-DD) + time (HH:MM) to UTC ISO8601.
+ * Alias for localIsraelToUTC — exposed for direct use in free-form slots.
+ */
+export function israelDateTimeToUTC(dateISO: string, timeHHMM: string): string {
+  return localIsraelToUTC(dateISO, timeHHMM);
+}

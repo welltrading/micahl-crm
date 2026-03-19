@@ -74,6 +74,10 @@ export async function createCampaign(params: {
   };
 }
 
+export async function deleteCampaign(id: string): Promise<void> {
+  await airtableBase('Campaigns').destroy(id);
+}
+
 export async function getEnrollmentCountsByCampaign(): Promise<Record<string, number>> {
   const records = await airtableBase('CampaignEnrollments')
     .select({ fields: ['קמפיין'] })

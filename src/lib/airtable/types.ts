@@ -30,9 +30,11 @@ export interface ScheduledMessage {
   id: string;
   campaign_id: string[];
   contact_id: string[];
+  title: string;         // כותרת — user-defined label
   message_content: string;
-  send_at: string; // UTC ISO8601
-  offset_label: 'week_before' | 'day_before' | 'morning' | 'half_hour';
+  send_date: string;     // YYYY-MM-DD Israel local (תאריך שליחה)
+  send_time: string;     // HH:MM Israel local (שעת שליחה)
+  slot_index: number;    // 1–4, stored in מספר הודעה for stable ordering
   status: 'pending' | 'sending' | 'sent' | 'failed';
   sent_at?: string;
 }
