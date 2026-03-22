@@ -1,6 +1,6 @@
 'use server';
 
-import { createCampaign, deleteCampaign } from '@/lib/airtable/campaigns';
+import { createCampaign, deleteCampaign, updateCampaignWelcomeMessage, getEnrolleesForCampaign, deleteEnrollment } from '@/lib/airtable/campaigns';
 import { getMessageLogByCampaign, type MessageLogDisplayEntry } from '@/lib/airtable/message-log';
 import {
   getScheduledMessagesByCampaign,
@@ -8,9 +8,9 @@ import {
   updateScheduledMessage,
   type SlotData,
 } from '@/lib/airtable/scheduled-messages';
-import type { Campaign, ScheduledMessage } from '@/lib/airtable/types';
+import type { Campaign, Contact, EnrolleeDisplayEntry, ScheduledMessage } from '@/lib/airtable/types';
 import { getEnrollmentsForCampaign } from '@/lib/airtable/scheduler-services';
-import { getContactById } from '@/lib/airtable/contacts';
+import { getContactById, getContacts, getEnrolledContactIds } from '@/lib/airtable/contacts';
 import { sendWhatsAppMessage } from '@/lib/airtable/green-api';
 import { normalizePhone } from '@/lib/airtable/phone';
 
@@ -97,6 +97,22 @@ export async function saveMessagesAction(
   }
 }
 
+export async function saveWelcomeMessageAction(
+  campaignId: string,
+  title: string,
+  content: string,
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    if (!campaignId) return { error: 'campaignId is required' };
+    if (!content.trim()) return { error: 'יש למלא תוכן הודעה.' };
+    await updateCampaignWelcomeMessage(campaignId, title, content);
+    return { ok: true };
+  } catch (err) {
+    console.error('saveWelcomeMessageAction error:', err);
+    return { error: 'שגיאה בשמירת הודעת ברוכה הבאה. נסי שנית.' };
+  }
+}
+
 export async function deleteCampaignAction(
   campaignId: string
 ): Promise<{ ok: true } | { error: string }> {
@@ -138,22 +154,36 @@ export async function updateMessageTimeAction(
   }
 }
 
+export type BroadcastTarget = 'campaign' | 'all_contacts' | 'all_enrollees';
+
 export async function broadcastAction(
   campaignId: string,
   messageContent: string,
+  target: BroadcastTarget = 'campaign',
 ): Promise<{ ok: true; sent: number; failed: number } | { error: string }> {
-  if (!campaignId) return { error: 'campaignId is required' };
   if (!messageContent.trim()) return { error: 'messageContent is required' };
 
   try {
-    const enrollments = await getEnrollmentsForCampaign(campaignId);
+    let contacts: Contact[] = [];
+
+    if (target === 'campaign') {
+      if (!campaignId) return { error: 'campaignId is required' };
+      const enrollments = await getEnrollmentsForCampaign(campaignId);
+      const results = await Promise.all(enrollments.map((e) => getContactById(e.contact_id[0])));
+      contacts = results.filter((c): c is Contact => c !== null);
+    } else if (target === 'all_contacts') {
+      contacts = await getContacts();
+    } else {
+      // all_enrollees — unique contacts across all campaigns
+      const ids = await getEnrolledContactIds();
+      const results = await Promise.all(ids.map((id) => getContactById(id)));
+      contacts = results.filter((c): c is Contact => c !== null);
+    }
+
     let sent = 0;
     let failed = 0;
 
-    for (const enrollment of enrollments) {
-      const contact = await getContactById(enrollment.contact_id[0]);
-      if (!contact) { failed++; continue; }
-
+    for (const contact of contacts) {
       try {
         const chatId = normalizePhone(contact.phone) + '@c.us';
         await sendWhatsAppMessage(chatId, messageContent);
@@ -161,7 +191,6 @@ export async function broadcastAction(
       } catch {
         failed++;
       }
-
       // GREEN API minimum 500ms delay; use 1000ms for safety
       await new Promise(r => setTimeout(r, 1000));
     }
@@ -183,5 +212,45 @@ export async function getCampaignLogAction(
   } catch (err) {
     console.error('getCampaignLogAction error:', err);
     return { error: 'שגיאה בטעינת יומן השליחות' };
+  }
+}
+
+export async function getEnrolleesAction(
+  campaignId: string
+): Promise<{ enrollees: EnrolleeDisplayEntry[] } | { error: string }> {
+  try {
+    if (!campaignId) return { error: 'campaignId is required' };
+    const raw = await getEnrolleesForCampaign(campaignId);
+    const contacts = await Promise.all(raw.map((e) => getContactById(e.contact_id)));
+    const enrollees: EnrolleeDisplayEntry[] = raw
+      .map((e, i) => {
+        const c = contacts[i];
+        if (!c) return null;
+        return {
+          enrollment_id: e.enrollment_id,
+          full_name: c.full_name,
+          phone: c.phone,
+          email: c.email,
+          approved_whatsapp: e.approved_whatsapp,
+        };
+      })
+      .filter((e): e is EnrolleeDisplayEntry => e !== null);
+    return { enrollees };
+  } catch (err) {
+    console.error('getEnrolleesAction error:', err);
+    return { error: 'שגיאה בטעינת הנרשמות' };
+  }
+}
+
+export async function removeEnrollmentAction(
+  enrollmentId: string
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    if (!enrollmentId) return { error: 'enrollmentId is required' };
+    await deleteEnrollment(enrollmentId);
+    return { ok: true };
+  } catch (err) {
+    console.error('removeEnrollmentAction error:', err);
+    return { error: 'שגיאה בביטול הרישום. נסי שנית.' };
   }
 }
