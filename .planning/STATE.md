@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-22T08:52:00.301Z"
+stopped_at: Completed 07-fix-enrollment-field-name 07-01-PLAN.md
+last_updated: "2026-03-22T09:17:37.684Z"
 last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 24
+  completed_plans: 23
   percent: 94
 ---
 
@@ -71,6 +71,7 @@ Progress: [█████████░] 94%
 | Phase 03-campaign-management P04 | 25 | 2 tasks | 6 files |
 | Phase 03-campaign-management P05 | 15 | 2 tasks | 3 files |
 | Phase 03-campaign-management P06 | 15 | 2 tasks | 5 files |
+| Phase 07-fix-enrollment-field-name P01 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,7 @@ Recent decisions affecting current work:
 - [Phase 03-campaign-management]: updateMessageTimeAction signature changed to (recordId, send_date, send_time) — callers pass Israel local values not ISO UTC strings
 - [Phase 03-campaign-management]: שליחה בשעה omitted from updateScheduledMessage when only content/title updated — no date+time to compute UTC from
 - [Phase 03-campaign-management]: CAMP-02/UX-02 design deviation accepted by Michal — flexible date pickers satisfy requirement intent per product owner decision (2026-03-19)
+- [Phase 07-fix-enrollment-field-name]: נרשמות table field linking contacts is named 'איש קשר' (not 'אשת קשר') — confirmed by cross-reference with getContactMessages and scheduler-services.ts CONTACT_FIELD constant
 
 ### Pending Todos
 
@@ -151,6 +153,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T08:52:00.291Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-fix-enrollment-field-name/07-CONTEXT.md
+Last session: 2026-03-22T09:17:37.675Z
+Stopped at: Completed 07-fix-enrollment-field-name 07-01-PLAN.md
+Resume file: None

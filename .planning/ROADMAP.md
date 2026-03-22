@@ -161,6 +161,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 3/3 | Complete   | 2026-03-19 |
 | 6. Stats + Polish | 2/2 | Complete   | 2026-03-19 |
-| 7. Fix Enrollment Field Name + Test Mocks | 0/2 | Planned    |  |
+| 7. Fix Enrollment Field Name + Test Mocks | 1/2 | In Progress|  |
 | 8. Webhook Campaign Auto-Enrollment | 0/0 | Pending    |  |
 | 9. Dashboard Live Stats + Dead Code Cleanup | 0/0 | Pending    |  |
