@@ -381,6 +381,12 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
           >
             יומן שליחות
           </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'enrollees' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('enrollees')}
+          >
+            נרשמות
+          </button>
         </div>
 
         {/* Messages tab */}
@@ -679,6 +685,57 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
                   </div>
                 )}
               </>
+            )}
+          </div>
+        )}
+
+        {/* Enrollees tab */}
+        {activeTab === 'enrollees' && (
+          <div className="mt-4 px-4">
+            {enrolleesLoading && (
+              <p className="text-sm text-muted-foreground text-center py-8">טוענת נרשמות...</p>
+            )}
+            {enrolleesError && (
+              <p className="text-sm text-red-600 text-center py-4">{enrolleesError}</p>
+            )}
+            {!enrolleesLoading && !enrolleesError && enrolleeEntries !== null && enrolleeEntries.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">אין נרשמות לקמפיין זה</p>
+            )}
+            {!enrolleesLoading && !enrolleesError && enrolleeEntries && enrolleeEntries.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-muted-foreground">
+                      <th className="pb-2 text-right font-medium pe-3">שם מלא</th>
+                      <th className="pb-2 text-right font-medium pe-3">טלפון</th>
+                      <th className="pb-2 text-right font-medium pe-3">אימייל</th>
+                      <th className="pb-2 text-right font-medium pe-3">אישרה וואטסאפ</th>
+                      <th className="pb-2 text-right font-medium">ביטול רישום</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enrolleeEntries.map((entry) => (
+                      <tr key={entry.enrollment_id} className="border-b last:border-0">
+                        <td className="py-2 pe-3">{entry.full_name}</td>
+                        <td className="py-2 pe-3" dir="ltr">
+                          {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
+                        </td>
+                        <td className="py-2 pe-3">{entry.email ?? '—'}</td>
+                        <td className="py-2 pe-3">{entry.approved_whatsapp ? 'כן' : 'לא'}</td>
+                        <td className="py-2">
+                          <button
+                            onClick={() => handleRemove(entry.enrollment_id)}
+                            disabled={removingId === entry.enrollment_id}
+                            className="rounded-md border border-red-200 text-red-600 px-2 py-1 text-xs hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {removingId === entry.enrollment_id ? 'מבטל...' : 'בטל רישום'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
