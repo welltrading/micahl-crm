@@ -128,6 +128,11 @@ Plans:
 **Gap Closure:** Closes gaps from audit:
 - field-name-divergence (critical) — `אשת קשר` → `איש קשר` in contacts.ts (4 locations)
 - 3 failing test mocks in contacts.test.ts (missing `_rawJson.createdTime`)
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Fix 4 field name literals in contacts.ts + align 2 test mocks in contacts.test.ts
+- [ ] 07-02-PLAN.md — Extend getContactDetail action to return campaigns + enrich ContactDetailPanel headings
 
 ### Phase 8: Webhook Campaign Auto-Enrollment
 **Goal:** כאשר MAKE.com שולח webhook עם campaign ID, איש הקשר החדש נרשם אוטומטית לקמפיין — שרשרת שליחת ההודעות מתממשת במלואה
@@ -156,6 +161,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 3/3 | Complete   | 2026-03-19 |
 | 6. Stats + Polish | 2/2 | Complete   | 2026-03-19 |
-| 7. Fix Enrollment Field Name + Test Mocks | 0/0 | Pending    |  |
+| 7. Fix Enrollment Field Name + Test Mocks | 0/2 | Planned    |  |
 | 8. Webhook Campaign Auto-Enrollment | 0/0 | Pending    |  |
 | 9. Dashboard Live Stats + Dead Code Cleanup | 0/0 | Pending    |  |
