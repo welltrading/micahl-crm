@@ -223,7 +223,7 @@ export async function getEnrolleesAction(
     const raw = await getEnrolleesForCampaign(campaignId);
     const contacts = await Promise.all(raw.map((e) => getContactById(e.contact_id)));
     const enrollees: EnrolleeDisplayEntry[] = raw
-      .map((e, i) => {
+      .map((e, i): EnrolleeDisplayEntry | null => {
         const c = contacts[i];
         if (!c) return null;
         return {
