@@ -148,6 +148,16 @@ Plans:
 - Dashboard `/` stat cards hardcoded `"--"` — replace with live contact/campaign counts
 - Dead code removal: `upsertScheduledMessages`, `updateMessageTimeAction`
 
+### Phase 10: Campaign Enrollees Tab
+**Goal:** מיכל יכולה לראות את כל הנרשמות לקמפיין עם שם, טלפון, אימייל ואישור וואטסאפ, ולבטל רישום — ישירות מתוך CampaignSheet ללא פתיחת Airtable
+**Requirements**: CAMP-07
+**Depends on:** Phase 9
+**Plans:** 2 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Service layer (getEnrolleesForCampaign, deleteEnrollment) + Server Actions (getEnrolleesAction, removeEnrollmentAction) + tests
+- [ ] 10-02-PLAN.md — "נרשמות" third tab in CampaignSheet: lazy-load, enrollees table, per-row unenroll + human verify checkpoint
+
 ## Progress
 
 **Execution Order:**
@@ -164,3 +174,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 7. Fix Enrollment Field Name + Test Mocks | 1/2 | In Progress|  |
 | 8. Webhook Campaign Auto-Enrollment | 0/0 | Pending    |  |
 | 9. Dashboard Live Stats + Dead Code Cleanup | 0/0 | Pending    |  |
+| 10. Campaign Enrollees Tab | 0/2 | Pending    |  |
