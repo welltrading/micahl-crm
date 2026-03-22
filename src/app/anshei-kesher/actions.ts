@@ -2,25 +2,30 @@
 import { revalidatePath } from 'next/cache';
 import { getContacts, createContact, getContactEnrollments, getContactMessages } from '@/lib/airtable/contacts';
 import { normalizePhone } from '@/lib/airtable/phone';
+import { getCampaigns } from '@/lib/airtable/campaigns';
 
 export async function addContact(
-  fullName: string,
-  phone: string
+  firstName: string,
+  lastName: string,
+  phone: string,
+  email?: string,
 ): Promise<{ success: true } | { error: string }> {
-  if (!fullName?.trim()) return { error: 'שם מלא נדרש' };
+  if (!firstName?.trim()) return { error: 'שם פרטי נדרש' };
+  if (!lastName?.trim()) return { error: 'שם משפחה נדרש' };
   const normalized = normalizePhone(phone);
   const existing = await getContacts();
   const duplicate = existing.find((c) => normalizePhone(c.phone) === normalized);
   if (duplicate) return { error: 'המספר כבר קיים במערכת' };
-  await createContact({ full_name: fullName.trim(), phone: normalized });
+  await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined });
   revalidatePath('/anshei-kesher');
   return { success: true };
 }
 
 export async function getContactDetail(contactId: string) {
-  const [enrollments, messages] = await Promise.all([
+  const [enrollments, messages, campaigns] = await Promise.all([
     getContactEnrollments(contactId),
     getContactMessages(contactId),
+    getCampaigns(),
   ]);
-  return { enrollments, messages };
+  return { enrollments, messages, campaigns };
 }
