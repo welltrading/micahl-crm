@@ -12,13 +12,18 @@ import {
 import {
   getCampaignMessagesAction,
   saveMessagesAction,
+  saveWelcomeMessageAction,
   deleteCampaignAction,
   broadcastAction,
   getCampaignLogAction,
+  getEnrolleesAction,
+  removeEnrollmentAction,
+  type BroadcastTarget,
 } from '@/app/kampanim/actions';
 import { israelDateTimeToUTC, formatSendPreview } from '@/lib/timezone-client';
 import { mapErrorToHebrew, type MessageLogDisplayEntry } from '@/lib/airtable/message-log-client';
 import { formatPhoneDisplay } from '@/lib/airtable/phone';
+import type { EnrolleeDisplayEntry } from '@/lib/airtable/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -92,21 +97,35 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
 
   // Broadcast state
   const [broadcastMessage, setBroadcastMessage] = React.useState('');
+  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('campaign');
   const [broadcastConfirm, setBroadcastConfirm] = React.useState(false);
   const [broadcastPending, setBroadcastPending] = React.useState(false);
   const [broadcastResult, setBroadcastResult] = React.useState<{ sent: number; failed: number } | null>(null);
   const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
 
   // Tab + log state
-  const [activeTab, setActiveTab] = React.useState<'messages' | 'log'>('messages');
+  const [activeTab, setActiveTab] = React.useState<'messages' | 'log' | 'enrollees'>('messages');
   const [logEntries, setLogEntries] = React.useState<MessageLogDisplayEntry[] | null>(null);
   const [logLoading, setLogLoading] = React.useState(false);
   const [logError, setLogError] = React.useState<string | null>(null);
   const [showFailuresOnly, setShowFailuresOnly] = React.useState(false);
 
+  // Enrollees tab state
+  const [enrolleeEntries, setEnrolleeEntries] = React.useState<EnrolleeDisplayEntry[] | null>(null);
+  const [enrolleesLoading, setEnrolleesLoading] = React.useState(false);
+  const [enrolleesError, setEnrolleesError] = React.useState<string | null>(null);
+  const [removingId, setRemovingId] = React.useState<string | null>(null);
+
   const [slots, setSlots] = React.useState<SlotState[]>([
     EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(), EMPTY_SLOT(),
   ]);
+
+  // Welcome message state
+  const [welcomeTitle, setWelcomeTitle] = React.useState('');
+  const [welcomeContent, setWelcomeContent] = React.useState('');
+  const [welcomeSaving, setWelcomeSaving] = React.useState(false);
+  const [welcomeError, setWelcomeError] = React.useState<string | null>(null);
+  const [welcomeSuccess, setWelcomeSuccess] = React.useState(false);
 
   // Reset broadcast state when campaign changes
   React.useEffect(() => {
@@ -117,6 +136,14 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
     setBroadcastError(null);
   }, [campaign?.id]);
 
+  // Load welcome message from campaign record
+  React.useEffect(() => {
+    setWelcomeTitle(campaign?.welcome_message_title ?? '');
+    setWelcomeContent(campaign?.welcome_message ?? '');
+    setWelcomeError(null);
+    setWelcomeSuccess(false);
+  }, [campaign?.id]);
+
   // Reset log state when campaign changes (prevents stale data from previous campaign)
   React.useEffect(() => {
     setActiveTab('messages');
@@ -124,6 +151,10 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
     setLogError(null);
     setLogLoading(false);
     setShowFailuresOnly(false);
+    setEnrolleeEntries(null);
+    setEnrolleesError(null);
+    setEnrolleesLoading(false);
+    setRemovingId(null);
   }, [campaign?.id]);
 
   // Load saved messages when campaign changes
@@ -175,6 +206,21 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
       setLogLoading(false);
       if ('error' in result) { setLogError(result.error); return; }
       setLogEntries(result.entries);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, campaign?.id]);
+
+  // Lazy-load enrollees when enrollees tab first opened
+  React.useEffect(() => {
+    if (activeTab !== 'enrollees' || !campaign) return;
+    if (enrolleeEntries !== null) return;
+    let cancelled = false;
+    setEnrolleesLoading(true);
+    getEnrolleesAction(campaign.id).then((result) => {
+      if (cancelled) return;
+      setEnrolleesLoading(false);
+      if ('error' in result) { setEnrolleesError(result.error); return; }
+      setEnrolleeEntries(result.enrollees);
     });
     return () => { cancelled = true; };
   }, [activeTab, campaign?.id]);
@@ -232,6 +278,21 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
   }
 
   // ---------------------------------------------------------------------------
+  // Welcome message save
+  // ---------------------------------------------------------------------------
+  async function handleSaveWelcome() {
+    if (!campaign) return;
+    setWelcomeError(null);
+    setWelcomeSaving(true);
+    setWelcomeSuccess(false);
+    const result = await saveWelcomeMessageAction(campaign.id, welcomeTitle, welcomeContent);
+    setWelcomeSaving(false);
+    if ('error' in result) { setWelcomeError(result.error); return; }
+    setWelcomeSuccess(true);
+    setTimeout(() => setWelcomeSuccess(false), 3000);
+  }
+
+  // ---------------------------------------------------------------------------
   // Broadcast
   // ---------------------------------------------------------------------------
   async function handleBroadcastConfirm() {
@@ -241,7 +302,7 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
     setBroadcastResult(null);
     setBroadcastConfirm(false);
 
-    const result = await broadcastAction(campaign.id, broadcastMessage);
+    const result = await broadcastAction(campaign.id, broadcastMessage, broadcastTarget);
     setBroadcastPending(false);
 
     if ('error' in result) {
@@ -265,6 +326,21 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
     if ('error' in result) { setDeleteError(result.error); return; }
     onDelete?.(campaign.id);
     onClose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Unenroll
+  // ---------------------------------------------------------------------------
+  async function handleRemove(enrollmentId: string) {
+    if (!window.confirm('לבטל את הרישום? פעולה זו אינה הפיכה.')) return;
+    setRemovingId(enrollmentId);
+    const result = await removeEnrollmentAction(enrollmentId);
+    setRemovingId(null);
+    if ('error' in result) {
+      setEnrolleesError(result.error);
+      return;
+    }
+    setEnrolleeEntries((prev) => prev?.filter((e) => e.enrollment_id !== enrollmentId) ?? null);
   }
 
   // ---------------------------------------------------------------------------
@@ -315,7 +391,38 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
                 <p className="text-sm text-muted-foreground text-center py-4">טוען הודעות...</p>
               )}
 
-              {!loading && slots.map((slot, i) => {
+              {/* Welcome message */}
+            <div className="flex flex-col gap-2 rounded-lg border border-blue-100 bg-blue-50/40 p-3">
+              <span className="text-xs font-semibold text-blue-800">הודעת ברוכה הבאה</span>
+              <p className="text-xs text-muted-foreground">נשלחת לנרשמת עם ההרשמה לקמפיין</p>
+              <input
+                type="text"
+                dir="rtl"
+                placeholder="כותרת (אופציונלי)"
+                value={welcomeTitle}
+                onChange={(e) => { setWelcomeTitle(e.target.value); setWelcomeError(null); }}
+                className="w-full rounded-md border px-3 py-1.5 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <textarea
+                rows={3}
+                dir="rtl"
+                placeholder="תוכן ההודעה..."
+                value={welcomeContent}
+                onChange={(e) => { setWelcomeContent(e.target.value); setWelcomeError(null); }}
+                className="w-full resize-none rounded-md border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              {welcomeError && <p className="text-xs text-red-600">{welcomeError}</p>}
+              {welcomeSuccess && <p className="text-xs text-green-600">✓ נשמר</p>}
+              <button
+                onClick={handleSaveWelcome}
+                disabled={welcomeSaving || loading}
+                className="self-end rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {welcomeSaving ? 'שומר...' : 'שמור הודעה'}
+              </button>
+            </div>
+
+            {!loading && slots.map((slot, i) => {
                 const preview = slot.date && slot.time
                   ? formatSendPreview(israelDateTimeToUTC(slot.date, slot.time))
                   : '';
@@ -402,6 +509,30 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
             <div className="border-t pt-4 px-4 pb-2 flex flex-col gap-3">
               <h3 className="text-sm font-semibold">שליחת broadcast</h3>
 
+              {/* Target selection */}
+              <div className="flex flex-col gap-1.5">
+                {(
+                  [
+                    { value: 'campaign', label: `נרשמות לקמפיין זה (${enrollmentCount})` },
+                    { value: 'all_enrollees', label: 'כל הנרשמות (כל הקמפיינים)' },
+                    { value: 'all_contacts', label: 'כל המתעניינות' },
+                  ] as { value: BroadcastTarget; label: string }[]
+                ).map(({ value, label }) => (
+                  <label key={value} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      name="broadcastTarget"
+                      value={value}
+                      checked={broadcastTarget === value}
+                      onChange={() => { setBroadcastTarget(value); setBroadcastResult(null); setBroadcastError(null); }}
+                      disabled={broadcastPending}
+                      className="accent-primary"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+
               <textarea
                 rows={3}
                 dir="rtl"
@@ -422,12 +553,12 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
                   disabled={!broadcastMessage.trim() || broadcastPending}
                   className="self-end rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {broadcastPending ? 'שולח...' : 'שלח לכל הנרשמות'}
+                  {broadcastPending ? 'שולח...' : 'שלח'}
                 </button>
               ) : (
                 <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
-                  <p className="text-sm font-medium text-amber-800">שלח לכל הנרשמות?</p>
-                  <p className="text-xs text-amber-700">ההודעה תישלח ל-{enrollmentCount} נרשמות. לא ניתן לבטל לאחר השליחה.</p>
+                  <p className="text-sm font-medium text-amber-800">לאשר שליחה?</p>
+                  <p className="text-xs text-amber-700">לא ניתן לבטל לאחר השליחה.</p>
                   <div className="flex gap-2 justify-end">
                     <button
                       onClick={() => setBroadcastConfirm(false)}
