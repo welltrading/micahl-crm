@@ -40,12 +40,15 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
   const [detail, setDetail] = React.useState<{
     enrollments: CampaignEnrollment[];
     messages: ScheduledMessage[];
+    campaigns: { id: string; campaign_name: string; event_date: string }[];
   } | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [campaignMap, setCampaignMap] = React.useState<Record<string, { name: string; date: string }>>({});
 
   React.useEffect(() => {
     if (!contact) {
       setDetail(null);
+      setCampaignMap({});
       return;
     }
     let cancelled = false;
@@ -53,6 +56,11 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
     getContactDetail(contact.id).then((data) => {
       if (!cancelled) {
         setDetail(data);
+        const map: Record<string, { name: string; date: string }> = {};
+        for (const c of data.campaigns) {
+          map[c.id] = { name: c.campaign_name, date: c.event_date };
+        }
+        setCampaignMap(map);
         setLoading(false);
       }
     });
@@ -76,6 +84,12 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
                 <span className="font-medium">טלפון:</span>{' '}
                 <span dir="ltr">{formatPhoneDisplay(contact.phone)}</span>
               </p>
+              {contact.email && (
+                <p>
+                  <span className="font-medium">מייל:</span>{' '}
+                  <span dir="ltr">{contact.email}</span>
+                </p>
+              )}
               <p>
                 <span className="font-medium">תאריך הצטרפות:</span>{' '}
                 {formatDate(contact.joined_date)}
@@ -102,7 +116,9 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
                     return (
                       <div key={enrollment.id} className="flex flex-col gap-2">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          קמפיין: {campaignId}
+                          {campaignMap[campaignId]
+                            ? campaignMap[campaignId].name + ' — ' + formatDate(campaignMap[campaignId].date)
+                            : campaignId}
                         </p>
                         {campaignMessages.length === 0 ? (
                           <p className="text-sm text-muted-foreground ps-2">אין הודעות מתוזמנות</p>

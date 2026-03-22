@@ -22,6 +22,10 @@ jest.mock('@/lib/airtable/phone', () => ({
   normalizePhone: mockNormalizePhone,
 }));
 
+jest.mock('@/lib/airtable/campaigns', () => ({
+  getCampaigns: jest.fn().mockResolvedValue([]),
+}));
+
 // Must import after mocks are set up
 import { addContact } from '../actions';
 
@@ -38,17 +42,24 @@ describe('addContact', () => {
     });
   });
 
-  it('returns error when fullName is empty', async () => {
-    const result = await addContact('', '0501234567');
+  it('returns error when firstName is empty', async () => {
+    const result = await addContact('', 'כהן', '0501234567');
 
-    expect(result).toEqual({ error: 'שם מלא נדרש' });
+    expect(result).toEqual({ error: 'שם פרטי נדרש' });
     expect(mockGetContacts).not.toHaveBeenCalled();
   });
 
-  it('returns error when fullName is whitespace only', async () => {
-    const result = await addContact('   ', '0501234567');
+  it('returns error when firstName is whitespace only', async () => {
+    const result = await addContact('   ', 'כהן', '0501234567');
 
-    expect(result).toEqual({ error: 'שם מלא נדרש' });
+    expect(result).toEqual({ error: 'שם פרטי נדרש' });
+    expect(mockGetContacts).not.toHaveBeenCalled();
+  });
+
+  it('returns error when lastName is empty', async () => {
+    const result = await addContact('שרה', '', '0501234567');
+
+    expect(result).toEqual({ error: 'שם משפחה נדרש' });
     expect(mockGetContacts).not.toHaveBeenCalled();
   });
 
@@ -57,6 +68,8 @@ describe('addContact', () => {
     mockGetContacts.mockResolvedValueOnce([
       {
         id: 'rec001',
+        first_name: 'רחל',
+        last_name: 'כהן',
         full_name: 'רחל כהן',
         phone: '972501234567',
         created_at: '2026-03-01T00:00:00.000Z',
@@ -64,7 +77,7 @@ describe('addContact', () => {
     ]);
 
     // Incoming phone in display format — normalizePhone will normalize it
-    const result = await addContact('שרה לוי', '050-123-4567');
+    const result = await addContact('שרה', 'לוי', '050-123-4567');
 
     expect(result).toEqual({ error: 'המספר כבר קיים במערכת' });
     expect(mockCreateContact).not.toHaveBeenCalled();
@@ -75,6 +88,8 @@ describe('addContact', () => {
     mockGetContacts.mockResolvedValueOnce([
       {
         id: 'rec002',
+        first_name: 'מרים',
+        last_name: 'לוי',
         full_name: 'מרים לוי',
         phone: '972501234567',
         created_at: '2026-03-01T00:00:00.000Z',
@@ -82,7 +97,7 @@ describe('addContact', () => {
     ]);
 
     // Incoming in dashed local format — should match after normalization
-    const result = await addContact('חנה כהן', '050-123-4567');
+    const result = await addContact('חנה', 'כהן', '050-123-4567');
 
     expect(result).toEqual({ error: 'המספר כבר קיים במערכת' });
     // normalizePhone called at least twice: once for incoming, once per existing contact
@@ -94,21 +109,21 @@ describe('addContact', () => {
     mockGetContacts.mockResolvedValueOnce([]);
     mockCreateContact.mockResolvedValueOnce({ success: true });
 
-    const result = await addContact('שרה לוי', '0509876543');
+    const result = await addContact('שרה', 'לוי', '0509876543');
 
     expect(mockCreateContact).toHaveBeenCalledTimes(1);
     expect(mockRevalidatePath).toHaveBeenCalledWith('/anshei-kesher');
     expect(result).toEqual({ success: true });
   });
 
-  it('trims whitespace from fullName before saving', async () => {
+  it('trims whitespace from names before saving', async () => {
     mockGetContacts.mockResolvedValueOnce([]);
     mockCreateContact.mockResolvedValueOnce({ success: true });
 
-    await addContact('  שרה לוי  ', '0509876543');
+    await addContact('  שרה  ', '  לוי  ', '0509876543');
 
     expect(mockCreateContact).toHaveBeenCalledWith(
-      expect.objectContaining({ full_name: 'שרה לוי' })
+      expect.objectContaining({ first_name: 'שרה', last_name: 'לוי' })
     );
   });
 });
