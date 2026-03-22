@@ -47,6 +47,8 @@ describe('getContacts', () => {
       id: 'rec001',
       _rawJson: { createdTime: '2026-03-01T10:00:00.000Z' },
       fields: {
+        'שם פרטי': 'רחל',
+        'שם משפחה': 'כהן',
         'שם מלא': 'רחל כהן',
         'טלפון': '972501234567',
         'תאריך הצטרפות': '2026-03-01T00:00:00.000Z',
@@ -60,6 +62,8 @@ describe('getContacts', () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject<Contact>({
       id: 'rec001',
+      first_name: 'רחל',
+      last_name: 'כהן',
       full_name: 'רחל כהן',
       phone: '972501234567',
       joined_date: '2026-03-01T00:00:00.000Z',
@@ -73,6 +77,8 @@ describe('getContacts', () => {
       id: 'rec002',
       _rawJson: { createdTime: '2026-03-10T00:00:00.000Z' },
       fields: {
+        'שם פרטי': 'מרים',
+        'שם משפחה': 'לוי',
         'שם מלא': 'מרים לוי',
         'טלפון': '972509876543',
       },
@@ -104,6 +110,8 @@ describe('getContactById', () => {
       id: 'rec003',
       _rawJson: { createdTime: '2026-03-15T00:00:00.000Z' },
       fields: {
+        'שם פרטי': 'דינה',
+        'שם משפחה': 'אברהם',
         'שם מלא': 'דינה אברהם',
         'טלפון': '972541234567',
       },
@@ -114,13 +122,16 @@ describe('getContactById', () => {
 
     expect(result).not.toBeNull();
     expect(result?.id).toBe('rec003');
+    expect(result?.first_name).toBe('דינה');
+    expect(result?.last_name).toBe('אברהם');
     expect(result?.full_name).toBe('דינה אברהם');
   });
 
   it('calls Airtable find with the correct record id', async () => {
     mockFind.mockResolvedValueOnce({
       id: 'recXYZ',
-      fields: { 'שם מלא': 'test', 'טלפון': '972500000000', 'נוצר בתאריך': '2026-01-01T00:00:00.000Z' },
+      _rawJson: { createdTime: '2026-03-15T00:00:00.000Z' },
+      fields: { 'שם פרטי': 'test', 'שם משפחה': '', 'שם מלא': 'test', 'טלפון': '972500000000' },
     });
 
     await getContactById('recXYZ');
@@ -137,11 +148,12 @@ describe('createContact', () => {
   it('calls Airtable create with normalized phone', async () => {
     mockCreate.mockResolvedValueOnce({ id: 'recNew', fields: {} });
 
-    await createContact({ full_name: 'שרה לוי', phone: '050-123-4567' });
+    await createContact({ first_name: 'שרה', last_name: 'לוי', phone: '050-123-4567' });
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        'שם מלא': 'שרה לוי',
+        'שם פרטי': 'שרה',
+        'שם משפחה': 'לוי',
         'טלפון': '972501234567',
       }),
       expect.anything()
@@ -151,7 +163,7 @@ describe('createContact', () => {
   it('normalizes +972 format before storing', async () => {
     mockCreate.mockResolvedValueOnce({ id: 'recNew2', fields: {} });
 
-    await createContact({ full_name: 'מרים כהן', phone: '+972521234567' });
+    await createContact({ first_name: 'מרים', last_name: 'כהן', phone: '+972521234567' });
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -165,7 +177,7 @@ describe('createContact', () => {
     mockCreate.mockResolvedValueOnce({ id: 'recNew3', fields: {} });
 
     const today = new Date().toISOString().split('T')[0];
-    await createContact({ full_name: 'לאה דוד', phone: '0501234567' });
+    await createContact({ first_name: 'לאה', last_name: 'דוד', phone: '0501234567' });
 
     const callArg = mockCreate.mock.calls[0][0];
     expect(callArg['תאריך הצטרפות']).toBe(today);
@@ -174,7 +186,7 @@ describe('createContact', () => {
   it('returns { success: true } on successful creation', async () => {
     mockCreate.mockResolvedValueOnce({ id: 'recNew4', fields: {} });
 
-    const result = await createContact({ full_name: 'רות אלון', phone: '972501234567' });
+    const result = await createContact({ first_name: 'רות', last_name: 'אלון', phone: '972501234567' });
 
     expect(result).toEqual({ success: true });
   });
@@ -202,7 +214,7 @@ describe('getContactEnrollments', () => {
 
     await getContactEnrollments('recABC');
 
-    expect(mockTable).toHaveBeenCalledWith('CampaignEnrollments');
+    expect(mockTable).toHaveBeenCalledWith('נרשמות');
   });
 
   it('returns only enrollments matching the contact', async () => {
@@ -298,7 +310,7 @@ describe('getContactMessages', () => {
 
     await getContactMessages('recABC');
 
-    expect(mockTable).toHaveBeenCalledWith('ScheduledMessages');
+    expect(mockTable).toHaveBeenCalledWith('הודעות מתוזמנות');
   });
 
   it('maps תזמון offset labels correctly', async () => {
@@ -410,7 +422,7 @@ describe('getContactMessages', () => {
 import { aggregateByMonth } from '@/components/contacts/ContactsPageClient';
 
 function makeContact(created_at: string): import('../types').Contact {
-  return { id: 'rec', full_name: 'Test', phone: '972500000000', created_at };
+  return { id: 'rec', first_name: 'Test', last_name: 'User', full_name: 'Test User', phone: '972500000000', created_at };
 }
 
 describe('aggregateByMonth', () => {
