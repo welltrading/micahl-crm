@@ -7,14 +7,15 @@
 const mockAll = jest.fn();
 const mockFind = jest.fn();
 const mockCreate = jest.fn();
+const mockDestroy = jest.fn();
 const mockSelect = jest.fn(() => ({ all: mockAll }));
-const mockTable = jest.fn(() => ({ select: mockSelect, find: mockFind, create: mockCreate }));
+const mockTable = jest.fn(() => ({ select: mockSelect, find: mockFind, create: mockCreate, destroy: mockDestroy }));
 
 jest.mock('../client', () => ({
   airtableBase: mockTable,
 }));
 
-import { getCampaigns, getCampaignById, createCampaign, getEnrollmentCountsByCampaign, deriveCampaignStatus } from '../campaigns';
+import { getCampaigns, getCampaignById, createCampaign, getEnrollmentCountsByCampaign, deriveCampaignStatus, getEnrolleesForCampaign, deleteEnrollment } from '../campaigns';
 import type { Campaign } from '../types';
 
 describe('getCampaigns', () => {
@@ -244,5 +245,140 @@ describe('deriveCampaignStatus', () => {
     pastDate.setUTCDate(pastDate.getUTCDate() - 10);
     const result = deriveCampaignStatus(pastDate.toISOString());
     expect(result).toBe('ended');
+  });
+});
+
+describe('getEnrolleesForCampaign', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns array of 2 objects for 2 enrollment records', async () => {
+    const mockRecords = [
+      {
+        id: 'recEnroll1',
+        fields: {
+          'איש קשר': ['recContact1'],
+          'אישרה וואטסאפ': true,
+        },
+      },
+      {
+        id: 'recEnroll2',
+        fields: {
+          'איש קשר': ['recContact2'],
+          // אישרה וואטסאפ omitted — unchecked checkbox
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getEnrolleesForCampaign('rec123');
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      enrollment_id: 'recEnroll1',
+      contact_id: 'recContact1',
+      approved_whatsapp: true,
+    });
+    expect(result[1]).toEqual({
+      enrollment_id: 'recEnroll2',
+      contact_id: 'recContact2',
+      approved_whatsapp: false,
+    });
+  });
+
+  it('uses FIND+ARRAYJOIN filter formula with campaignId', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    await getEnrolleesForCampaign('recCampXYZ');
+
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filterByFormula: 'FIND("recCampXYZ", ARRAYJOIN({קמפיין}))',
+      })
+    );
+  });
+
+  it('queries fields [איש קשר, אישרה וואטסאפ] from נרשמות table', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    await getEnrolleesForCampaign('rec123');
+
+    expect(mockTable).toHaveBeenCalledWith('נרשמות');
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fields: ['איש קשר', 'אישרה וואטסאפ'],
+      })
+    );
+  });
+
+  it('coerces undefined אישרה וואטסאפ (unchecked checkbox) to false', async () => {
+    const mockRecords = [
+      {
+        id: 'recEnroll3',
+        fields: {
+          'איש קשר': ['recContact3'],
+          // no 'אישרה וואטסאפ' field
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getEnrolleesForCampaign('rec123');
+
+    expect(result[0].approved_whatsapp).toBe(false);
+  });
+
+  it('handles missing איש קשר linked record gracefully', async () => {
+    const mockRecords = [
+      {
+        id: 'recEnroll4',
+        fields: {
+          // no 'איש קשר' field
+        },
+      },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
+
+    const result = await getEnrolleesForCampaign('rec123');
+
+    expect(result[0].contact_id).toBe('');
+  });
+
+  it('returns empty array when no enrollments found', async () => {
+    mockAll.mockResolvedValueOnce([]);
+
+    const result = await getEnrolleesForCampaign('rec123');
+
+    expect(result).toEqual([]);
+  });
+});
+
+describe('deleteEnrollment', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('calls airtableBase(נרשמות).destroy with the enrollmentId', async () => {
+    mockDestroy.mockResolvedValueOnce({ id: 'recABC' });
+
+    await deleteEnrollment('recABC');
+
+    expect(mockTable).toHaveBeenCalledWith('נרשמות');
+    expect(mockDestroy).toHaveBeenCalledWith('recABC');
+  });
+
+  it('returns void on success', async () => {
+    mockDestroy.mockResolvedValueOnce({ id: 'recABC' });
+
+    const result = await deleteEnrollment('recABC');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('propagates Airtable error without swallowing', async () => {
+    mockDestroy.mockRejectedValueOnce(new Error('Record not found'));
+
+    await expect(deleteEnrollment('invalidId')).rejects.toThrow('Record not found');
   });
 });

@@ -16,7 +16,7 @@ export function deriveCampaignStatus(eventDateISO: string): Campaign['status'] {
 }
 
 export async function getCampaigns(): Promise<Campaign[]> {
-  const records = await airtableBase('Campaigns')
+  const records = await airtableBase('קמפיין')
     .select({
       sort: [{ field: 'תאריך אירוע', direction: 'desc' }],
     })
@@ -29,13 +29,15 @@ export async function getCampaigns(): Promise<Campaign[]> {
     event_time: r.fields['שעת האירוע'] as string | undefined,
     description: r.fields['תיאור'] as string | undefined,
     status: deriveCampaignStatus(r.fields['תאריך אירוע'] as string),
-    created_at: r.fields['נוצר בתאריך'] as string,
+    created_at: r._rawJson.createdTime as string,
+    welcome_message_title: r.fields['כותרת ברוכה הבאה'] as string | undefined,
+    welcome_message: r.fields['הודעת ברוכה הבאה'] as string | undefined,
   }));
 }
 
 export async function getCampaignById(id: string): Promise<Campaign | null> {
   try {
-    const record = await airtableBase('Campaigns').find(id);
+    const record = await airtableBase('קמפיין').find(id);
     return {
       id: record.id,
       campaign_name: record.fields['שם קמפיין'] as string,
@@ -43,7 +45,9 @@ export async function getCampaignById(id: string): Promise<Campaign | null> {
       event_time: record.fields['שעת האירוע'] as string | undefined,
       description: record.fields['תיאור'] as string | undefined,
       status: deriveCampaignStatus(record.fields['תאריך אירוע'] as string),
-      created_at: record.fields['נוצר בתאריך'] as string,
+      created_at: record._rawJson.createdTime as string,
+      welcome_message_title: record.fields['כותרת ברוכה הבאה'] as string | undefined,
+      welcome_message: record.fields['הודעת ברוכה הבאה'] as string | undefined,
     };
   } catch {
     return null;
@@ -56,7 +60,7 @@ export async function createCampaign(params: {
   event_time?: string;
   description?: string;
 }): Promise<Campaign> {
-  const record = await airtableBase('Campaigns').create({
+  const record = await airtableBase('קמפיין').create({
     'שם קמפיין': params.campaign_name,
     'תאריך אירוע': params.event_date,
     ...(params.event_time !== undefined ? { 'שעת האירוע': params.event_time } : {}),
@@ -74,12 +78,45 @@ export async function createCampaign(params: {
   };
 }
 
+export async function updateCampaignWelcomeMessage(
+  id: string,
+  title: string,
+  content: string,
+): Promise<void> {
+  await airtableBase('קמפיין').update(id, {
+    'כותרת ברוכה הבאה': title,
+    'הודעת ברוכה הבאה': content,
+  });
+}
+
 export async function deleteCampaign(id: string): Promise<void> {
-  await airtableBase('Campaigns').destroy(id);
+  await airtableBase('קמפיין').destroy(id);
+}
+
+export async function getEnrolleesForCampaign(
+  campaignId: string
+): Promise<Array<{ enrollment_id: string; contact_id: string; approved_whatsapp: boolean }>> {
+  const formula = `FIND("${campaignId}", ARRAYJOIN({קמפיין}))`;
+  const records = await airtableBase('נרשמות')
+    .select({
+      filterByFormula: formula,
+      fields: ['איש קשר', 'אישרה וואטסאפ'],
+    })
+    .all();
+
+  return records.map((r) => ({
+    enrollment_id: r.id,
+    contact_id: ((r.fields['איש קשר'] as string[]) ?? [])[0] ?? '',
+    approved_whatsapp: Boolean(r.fields['אישרה וואטסאפ']),
+  }));
+}
+
+export async function deleteEnrollment(enrollmentId: string): Promise<void> {
+  await airtableBase('נרשמות').destroy(enrollmentId);
 }
 
 export async function getEnrollmentCountsByCampaign(): Promise<Record<string, number>> {
-  const records = await airtableBase('CampaignEnrollments')
+  const records = await airtableBase('נרשמות')
     .select({ fields: ['קמפיין'] })
     .all();
 

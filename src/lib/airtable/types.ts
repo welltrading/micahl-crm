@@ -7,11 +7,16 @@ export interface Campaign {
   status: 'future' | 'active' | 'ended';
   created_at: string;
   enrollment_count?: number;
+  welcome_message_title?: string;
+  welcome_message?: string;
 }
 
 export interface Contact {
   id: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
+  full_name: string; // formula: {שם פרטי}&" "&{שם משפחה} — read-only
+  email?: string;
   phone: string; // normalized: 972XXXXXXXXXX
   joined_date?: string;
   notes?: string;
@@ -37,6 +42,14 @@ export interface ScheduledMessage {
   slot_index: number;    // 1–4, stored in מספר הודעה for stable ordering
   status: 'pending' | 'sending' | 'sent' | 'failed';
   sent_at?: string;
+}
+
+export interface EnrolleeDisplayEntry {
+  enrollment_id: string;
+  full_name: string;
+  phone: string;
+  email?: string;
+  approved_whatsapp: boolean;
 }
 
 export interface MessageLog {
