@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
+stopped_at: Completed 10-campaign-enrollees-tab 10-01-PLAN.md
+last_updated: "2026-03-22T11:17:31.987Z"
+last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
+progress:
+  total_phases: 10
+  completed_phases: 6
+  total_plans: 26
+  completed_plans: 24
+  percent: 92
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: completed
 stopped_at: Completed 07-fix-enrollment-field-name 07-01-PLAN.md
 last_updated: "2026-03-22T09:17:37.684Z"
 last_activity: 2026-03-19 — 05-03 יומן שליחות log tab with failures toggle complete (user approved)
 progress:
-  total_phases: 9
+  [█████████░] 92%
   completed_phases: 6
   total_plans: 24
   completed_plans: 23
@@ -72,8 +88,13 @@ Progress: [█████████░] 94%
 | Phase 03-campaign-management P05 | 15 | 2 tasks | 3 files |
 | Phase 03-campaign-management P06 | 15 | 2 tasks | 5 files |
 | Phase 07-fix-enrollment-field-name P01 | 5 | 2 tasks | 2 files |
+| Phase 10-campaign-enrollees-tab P01 | 8 | 2 tasks | 5 files |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 10 added: Campaign Enrollees Tab — טאב נרשמות ב-CampaignSheet עם שם, טלפון, אימייל, אישרה וואטסאפ, וביטול רישום
 
 ### Decisions
 
@@ -140,6 +161,7 @@ Recent decisions affecting current work:
 - [Phase 03-campaign-management]: שליחה בשעה omitted from updateScheduledMessage when only content/title updated — no date+time to compute UTC from
 - [Phase 03-campaign-management]: CAMP-02/UX-02 design deviation accepted by Michal — flexible date pickers satisfy requirement intent per product owner decision (2026-03-19)
 - [Phase 07-fix-enrollment-field-name]: נרשמות table field linking contacts is named 'איש קשר' (not 'אשת קשר') — confirmed by cross-reference with getContactMessages and scheduler-services.ts CONTACT_FIELD constant
+- [Phase 10-campaign-enrollees-tab]: getEnrolleesForCampaign uses FIND+ARRAYJOIN filter; Boolean() coercion on אישרה וואטסאפ checkbox; null contacts filtered silently
 
 ### Pending Todos
 
@@ -153,6 +175,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T09:17:37.675Z
-Stopped at: Completed 07-fix-enrollment-field-name 07-01-PLAN.md
+Last session: 2026-03-22T11:17:31.979Z
+Stopped at: Completed 10-campaign-enrollees-tab 10-01-PLAN.md
 Resume file: None
