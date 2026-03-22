@@ -122,6 +122,27 @@ Plans:
 - [ ] 06-01-PLAN.md — Growth table in ContactsPageClient: aggregateByMonth TDD + UI integration with date range filter
 - [ ] 06-02-PLAN.md — Mobile responsive polish: layout padding fix, ContactDetailPanel width, visual checkpoint
 
+### Phase 7: Fix Enrollment Field Name + Test Mocks
+**Goal:** סגירת באג קריטי — שם שדה שגוי בשאילתות נרשמות גורם ל-getContactEnrollments להחזיר מערכים ריקים בפרודקשן, והיסטוריית קמפיינים של איש קשר לא מוצגת
+**Requirements:** CONT-02
+**Gap Closure:** Closes gaps from audit:
+- field-name-divergence (critical) — `אשת קשר` → `איש קשר` in contacts.ts (4 locations)
+- 3 failing test mocks in contacts.test.ts (missing `_rawJson.createdTime`)
+
+### Phase 8: Webhook Campaign Auto-Enrollment
+**Goal:** כאשר MAKE.com שולח webhook עם campaign ID, איש הקשר החדש נרשם אוטומטית לקמפיין — שרשרת שליחת ההודעות מתממשת במלואה
+**Requirements:** INFRA-04
+**Gap Closure:** Closes gaps from audit:
+- webhook-enrollment-gap (major) — create CampaignEnrollment record when body.campaign present
+- E2E Flow 3: MAKE.com webhook → contact enrolled → receives scheduled messages
+
+### Phase 9: Dashboard Live Stats + Dead Code Cleanup
+**Goal:** כרטיסי הסטטיסטיקה בדאשבורד הראשי מציגים נתונים אמיתיים (ולא "--"), וקוד מת שלא נקרא מעולם מוסר
+**Requirements:** (polish — no new requirements)
+**Gap Closure:** Closes gaps from audit:
+- Dashboard `/` stat cards hardcoded `"--"` — replace with live contact/campaign counts
+- Dead code removal: `upsertScheduledMessages`, `updateMessageTimeAction`
+
 ## Progress
 
 **Execution Order:**
@@ -135,3 +156,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 4. Scheduler Engine | 4/4 | Complete   | 2026-03-18 |
 | 5. Monitoring + Error UX | 3/3 | Complete   | 2026-03-19 |
 | 6. Stats + Polish | 2/2 | Complete   | 2026-03-19 |
+| 7. Fix Enrollment Field Name + Test Mocks | 0/0 | Pending    |  |
+| 8. Webhook Campaign Auto-Enrollment | 0/0 | Pending    |  |
+| 9. Dashboard Live Stats + Dead Code Cleanup | 0/0 | Pending    |  |
