@@ -6,14 +6,17 @@ import { normalizePhone } from './phone';
 // API field name = Hebrew display name in this project
 
 export async function getContacts(): Promise<Contact[]> {
-  const records = await airtableBase('Contacts')
+  const records = await airtableBase('מתענינות')
     .select()
     .all();
 
   return records
     .map((r) => ({
       id: r.id,
-      full_name: r.fields['שם מלא'] as string,
+      first_name: (r.fields['שם פרטי'] as string) ?? '',
+      last_name: (r.fields['שם משפחה'] as string) ?? '',
+      full_name: (r.fields['שם מלא'] as string) ?? '',
+      email: r.fields['כתובת מייל'] as string | undefined,
       phone: r.fields['טלפון'] as string,
       joined_date: r.fields['תאריך הצטרפות'] as string | undefined,
       notes: r.fields['הערות'] as string | undefined,
@@ -24,10 +27,13 @@ export async function getContacts(): Promise<Contact[]> {
 
 export async function getContactById(id: string): Promise<Contact | null> {
   try {
-    const record = await airtableBase('Contacts').find(id);
+    const record = await airtableBase('מתענינות').find(id);
     return {
       id: record.id,
-      full_name: record.fields['שם מלא'] as string,
+      first_name: (record.fields['שם פרטי'] as string) ?? '',
+      last_name: (record.fields['שם משפחה'] as string) ?? '',
+      full_name: (record.fields['שם מלא'] as string) ?? '',
+      email: record.fields['כתובת מייל'] as string | undefined,
       phone: record.fields['טלפון'] as string,
       joined_date: record.fields['תאריך הצטרפות'] as string | undefined,
       notes: record.fields['הערות'] as string | undefined,
@@ -44,16 +50,20 @@ export async function getContactById(id: string): Promise<Contact | null> {
  * Sets joined_date to today's ISO date.
  */
 export async function createContact(input: {
-  full_name: string;
+  first_name: string;
+  last_name: string;
   phone: string;
+  email?: string;
 }): Promise<{ success: true }> {
   const today = new Date().toISOString().split('T')[0];
 
-  await airtableBase('Contacts').create(
+  await airtableBase('מתענינות').create(
     {
-      'שם מלא': input.full_name,
+      'שם פרטי': input.first_name,
+      'שם משפחה': input.last_name,
       'טלפון': normalizePhone(input.phone),
       'תאריך הצטרפות': today,
+      ...(input.email ? { 'כתובת מייל': input.email } : {}),
     },
     { typecast: true }
   );
@@ -66,7 +76,7 @@ export async function createContact(input: {
  * Uses FIND + ARRAYJOIN filterByFormula — required for Airtable linked record fields.
  */
 export async function getContactEnrollments(contactId: string): Promise<CampaignEnrollment[]> {
-  const records = await airtableBase('CampaignEnrollments')
+  const records = await airtableBase('נרשמות')
     .select({
       filterByFormula: `FIND("${contactId}", ARRAYJOIN({איש קשר}))`,
     })
@@ -86,7 +96,7 @@ export async function getContactEnrollments(contactId: string): Promise<Campaign
  * Uses FIND + ARRAYJOIN filterByFormula — required for Airtable linked record fields.
  */
 export async function getContactMessages(contactId: string): Promise<ScheduledMessage[]> {
-  const records = await airtableBase('ScheduledMessages')
+  const records = await airtableBase('הודעות מתוזמנות')
     .select({
       filterByFormula: `FIND("${contactId}", ARRAYJOIN({איש קשר}))`,
     })
@@ -105,6 +115,25 @@ export async function getContactMessages(contactId: string): Promise<ScheduledMe
     status: mapMessageStatus(r.fields['סטטוס'] as string),
     sent_at: r.fields['נשלח בשעה'] as string | undefined,
   }));
+}
+
+/**
+ * Returns unique contact IDs across all enrollments (נרשמות table).
+ * Used for "send to all enrolled contacts" broadcast.
+ */
+export async function getEnrolledContactIds(): Promise<string[]> {
+  const records = await airtableBase('נרשמות')
+    .select({ fields: ['איש קשר'] })
+    .all();
+
+  const ids = new Set<string>();
+  for (const r of records) {
+    const contactIds = r.fields['איש קשר'] as string[] | undefined;
+    if (contactIds) {
+      for (const id of contactIds) ids.add(id);
+    }
+  }
+  return Array.from(ids);
 }
 
 // --- Private helpers ---
