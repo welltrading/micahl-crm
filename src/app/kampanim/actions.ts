@@ -231,7 +231,6 @@ export async function getEnrolleesAction(
           full_name: c.full_name,
           phone: c.phone,
           email: c.email,
-          approved_whatsapp: e.approved_whatsapp,
         };
       })
       .filter((e): e is EnrolleeDisplayEntry => e !== null);

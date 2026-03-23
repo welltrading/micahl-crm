@@ -709,7 +709,6 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
                       <th className="pb-2 text-right font-medium pe-3">שם מלא</th>
                       <th className="pb-2 text-right font-medium pe-3">טלפון</th>
                       <th className="pb-2 text-right font-medium pe-3">אימייל</th>
-                      <th className="pb-2 text-right font-medium pe-3">אישרה וואטסאפ</th>
                       <th className="pb-2 text-right font-medium">ביטול רישום</th>
                     </tr>
                   </thead>
@@ -721,7 +720,6 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
                           {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
                         </td>
                         <td className="py-2 pe-3">{entry.email ?? '—'}</td>
-                        <td className="py-2 pe-3">{entry.approved_whatsapp ? 'כן' : 'לא'}</td>
                         <td className="py-2">
                           <button
                             onClick={() => handleRemove(entry.enrollment_id)}

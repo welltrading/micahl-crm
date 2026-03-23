@@ -259,14 +259,12 @@ describe('getEnrolleesForCampaign', () => {
         id: 'recEnroll1',
         fields: {
           'איש קשר': ['recContact1'],
-          'אישרה וואטסאפ': true,
         },
       },
       {
         id: 'recEnroll2',
         fields: {
           'איש קשר': ['recContact2'],
-          // אישרה וואטסאפ omitted — unchecked checkbox
         },
       },
     ];
@@ -278,12 +276,10 @@ describe('getEnrolleesForCampaign', () => {
     expect(result[0]).toEqual({
       enrollment_id: 'recEnroll1',
       contact_id: 'recContact1',
-      approved_whatsapp: true,
     });
     expect(result[1]).toEqual({
       enrollment_id: 'recEnroll2',
       contact_id: 'recContact2',
-      approved_whatsapp: false,
     });
   });
 
@@ -299,7 +295,7 @@ describe('getEnrolleesForCampaign', () => {
     );
   });
 
-  it('queries fields [איש קשר, אישרה וואטסאפ] from נרשמות table', async () => {
+  it('queries field [איש קשר] from נרשמות table', async () => {
     mockAll.mockResolvedValueOnce([]);
 
     await getEnrolleesForCampaign('rec123');
@@ -307,26 +303,9 @@ describe('getEnrolleesForCampaign', () => {
     expect(mockTable).toHaveBeenCalledWith('נרשמות');
     expect(mockSelect).toHaveBeenCalledWith(
       expect.objectContaining({
-        fields: ['איש קשר', 'אישרה וואטסאפ'],
+        fields: ['איש קשר'],
       })
     );
-  });
-
-  it('coerces undefined אישרה וואטסאפ (unchecked checkbox) to false', async () => {
-    const mockRecords = [
-      {
-        id: 'recEnroll3',
-        fields: {
-          'איש קשר': ['recContact3'],
-          // no 'אישרה וואטסאפ' field
-        },
-      },
-    ];
-    mockAll.mockResolvedValueOnce(mockRecords);
-
-    const result = await getEnrolleesForCampaign('rec123');
-
-    expect(result[0].approved_whatsapp).toBe(false);
   });
 
   it('handles missing איש קשר linked record gracefully', async () => {

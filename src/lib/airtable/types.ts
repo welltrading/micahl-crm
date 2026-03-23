@@ -49,7 +49,6 @@ export interface EnrolleeDisplayEntry {
   full_name: string;
   phone: string;
   email?: string;
-  approved_whatsapp: boolean;
 }
 
 export interface MessageLog {

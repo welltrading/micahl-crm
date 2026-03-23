@@ -65,7 +65,6 @@ const mockGetContactById = contactsModule.getContactById as jest.MockedFunction<
 const MOCK_ENROLLMENT_RAW = {
   enrollment_id: 'recEnroll1',
   contact_id: 'recContact1',
-  approved_whatsapp: true,
 };
 
 const MOCK_CONTACT = {
@@ -96,14 +95,13 @@ describe('getEnrolleesAction', () => {
           full_name: 'רחל כהן',
           phone: '972501234567',
           email: 'rachel@example.com',
-          approved_whatsapp: true,
         },
       ],
     });
   });
 
   it('calls getEnrolleesForCampaign then getContactById in parallel for each enrollment', async () => {
-    const enrollment2 = { enrollment_id: 'recEnroll2', contact_id: 'recContact2', approved_whatsapp: false };
+    const enrollment2 = { enrollment_id: 'recEnroll2', contact_id: 'recContact2' };
     mockGetEnrolleesForCampaign.mockResolvedValueOnce([MOCK_ENROLLMENT_RAW, enrollment2]);
     mockGetContactById
       .mockResolvedValueOnce(MOCK_CONTACT)
@@ -133,7 +131,7 @@ describe('getEnrolleesAction', () => {
   });
 
   it('filters out enrollments where getContactById returns null', async () => {
-    const enrollment2 = { enrollment_id: 'recEnroll2', contact_id: 'recContact2', approved_whatsapp: false };
+    const enrollment2 = { enrollment_id: 'recEnroll2', contact_id: 'recContact2' };
     mockGetEnrolleesForCampaign.mockResolvedValueOnce([MOCK_ENROLLMENT_RAW, enrollment2]);
     mockGetContactById
       .mockResolvedValueOnce(MOCK_CONTACT)
