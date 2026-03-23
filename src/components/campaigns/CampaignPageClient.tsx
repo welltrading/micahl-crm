@@ -630,7 +630,9 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
               </div>
             )}
             {enrolleesError && (
-              <p className="text-sm text-red-600 text-center py-4">{enrolleesError}</p>
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 font-mono break-all">
+                {enrolleesError}
+              </div>
             )}
             {!enrolleesLoading && !enrolleesError && enrolleeEntries !== null && enrolleeEntries.length === 0 && (
               <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">

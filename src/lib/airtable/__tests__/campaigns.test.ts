@@ -253,19 +253,15 @@ describe('getEnrolleesForCampaign', () => {
     jest.clearAllMocks();
   });
 
-  it('returns array of 2 objects for 2 enrollment records', async () => {
+  it('returns array of 2 objects for 2 enrollment records matching campaign', async () => {
     const mockRecords = [
       {
         id: 'recEnroll1',
-        fields: {
-          'איש קשר': ['recContact1'],
-        },
+        fields: { 'קמפיין': ['rec123'], 'איש קשר': ['recContact1'] },
       },
       {
         id: 'recEnroll2',
-        fields: {
-          'איש קשר': ['recContact2'],
-        },
+        fields: { 'קמפיין': ['rec123'], 'איש קשר': ['recContact2'] },
       },
     ];
     mockAll.mockResolvedValueOnce(mockRecords);
@@ -273,48 +269,30 @@ describe('getEnrolleesForCampaign', () => {
     const result = await getEnrolleesForCampaign('rec123');
 
     expect(result).toHaveLength(2);
-    expect(result[0]).toEqual({
-      enrollment_id: 'recEnroll1',
-      contact_id: 'recContact1',
-    });
-    expect(result[1]).toEqual({
-      enrollment_id: 'recEnroll2',
-      contact_id: 'recContact2',
-    });
+    expect(result[0]).toEqual({ enrollment_id: 'recEnroll1', contact_id: 'recContact1' });
+    expect(result[1]).toEqual({ enrollment_id: 'recEnroll2', contact_id: 'recContact2' });
   });
 
-  it('uses FIND+ARRAYJOIN filter formula with campaignId', async () => {
-    mockAll.mockResolvedValueOnce([]);
+  it('fetches all records from נרשמות and filters by campaignId', async () => {
+    const mockRecords = [
+      { id: 'recEnrollA', fields: { 'קמפיין': ['rec123'], 'איש קשר': ['recContactA'] } },
+      { id: 'recEnrollB', fields: { 'קמפיין': ['recOTHER'], 'איש קשר': ['recContactB'] } },
+    ];
+    mockAll.mockResolvedValueOnce(mockRecords);
 
-    await getEnrolleesForCampaign('recCampXYZ');
-
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: 'FIND("recCampXYZ", ARRAYJOIN({קמפיין}))',
-      })
-    );
-  });
-
-  it('queries נרשמות table with FIND formula', async () => {
-    mockAll.mockResolvedValueOnce([]);
-
-    await getEnrolleesForCampaign('rec123');
+    const result = await getEnrolleesForCampaign('rec123');
 
     expect(mockTable).toHaveBeenCalledWith('נרשמות');
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: 'FIND("rec123", ARRAYJOIN({קמפיין}))',
-      })
-    );
+    expect(result).toHaveLength(1);
+    expect(result[0].enrollment_id).toBe('recEnrollA');
+    expect(result[0].contact_id).toBe('recContactA');
   });
 
   it('handles missing איש קשר linked record gracefully', async () => {
     const mockRecords = [
       {
         id: 'recEnroll4',
-        fields: {
-          // no 'איש קשר' field
-        },
+        fields: { 'קמפיין': ['rec123'] /* no 'איש קשר' field */ },
       },
     ];
     mockAll.mockResolvedValueOnce(mockRecords);

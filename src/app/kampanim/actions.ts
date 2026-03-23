@@ -221,7 +221,9 @@ export async function getEnrolleesAction(
   try {
     if (!campaignId) return { error: 'campaignId is required' };
     const raw = await getEnrolleesForCampaign(campaignId);
+    console.log('[getEnrolleesAction] campaignId:', campaignId, '| raw count:', raw.length, '| contact_ids:', raw.map(e => e.contact_id));
     const contacts = await Promise.all(raw.map((e) => getContactById(e.contact_id)));
+    console.log('[getEnrolleesAction] contacts resolved:', contacts.map(c => c ? c.id : null));
     const enrollees: EnrolleeDisplayEntry[] = raw
       .map((e, i): EnrolleeDisplayEntry | null => {
         const c = contacts[i];
@@ -237,7 +239,7 @@ export async function getEnrolleesAction(
     return { enrollees };
   } catch (err) {
     console.error('getEnrolleesAction error:', err);
-    return { error: 'שגיאה בטעינת הנרשמות' };
+    return { error: String(err) };
   }
 }
 

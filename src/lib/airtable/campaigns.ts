@@ -96,15 +96,17 @@ export async function deleteCampaign(id: string): Promise<void> {
 export async function getEnrolleesForCampaign(
   campaignId: string
 ): Promise<Array<{ enrollment_id: string; contact_id: string }>> {
-  const formula = `FIND("${campaignId}", ARRAYJOIN({קמפיין}))`;
-  const records = await airtableBase('נרשמות')
-    .select({ filterByFormula: formula })
-    .all();
+  const records = await airtableBase('נרשמות').select().all();
 
-  return records.map((r) => ({
-    enrollment_id: r.id,
-    contact_id: ((r.fields['איש קשר'] as string[]) ?? [])[0] ?? '',
-  }));
+  return records
+    .filter((r) => {
+      const ids = r.fields['קמפיין'] as string[] | undefined;
+      return ids?.includes(campaignId) ?? false;
+    })
+    .map((r) => ({
+      enrollment_id: r.id,
+      contact_id: ((r.fields['איש קשר'] as string[]) ?? [])[0] ?? '',
+    }));
 }
 
 export async function deleteEnrollment(enrollmentId: string): Promise<void> {
