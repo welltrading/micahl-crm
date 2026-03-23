@@ -6,7 +6,6 @@ import type { Campaign } from '@/lib/airtable/types';
 import { Button } from '@/components/ui/button';
 import { CampaignCard } from './CampaignCard';
 import { CreateCampaignModal } from './CreateCampaignModal';
-import { CampaignSheet } from './CampaignSheet';
 
 interface CampaignsPageClientProps {
   campaigns: Campaign[];
@@ -16,7 +15,6 @@ interface CampaignsPageClientProps {
 
 export function CampaignsPageClient({ campaigns, enrollmentCounts, greenApiState }: CampaignsPageClientProps) {
   const router = useRouter();
-  const [selectedCampaign, setSelectedCampaign] = React.useState<Campaign | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   return (
@@ -48,7 +46,7 @@ export function CampaignsPageClient({ campaigns, enrollmentCounts, greenApiState
               key={campaign.id}
               campaign={campaign}
               enrollmentCount={enrollmentCounts[campaign.id] ?? 0}
-              onClick={() => setSelectedCampaign(campaign)}
+              onClick={() => router.push(`/kampanim/${campaign.id}`)}
             />
           ))}
         </div>
@@ -59,17 +57,8 @@ export function CampaignsPageClient({ campaigns, enrollmentCounts, greenApiState
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         onCampaignCreated={(c) => {
-          setSelectedCampaign(c);
-          router.refresh();
+          router.push(`/kampanim/${c.id}`);
         }}
-      />
-
-      {/* CampaignSheet: slides in from right when a campaign is selected */}
-      <CampaignSheet
-        campaign={selectedCampaign}
-        enrollmentCount={selectedCampaign ? (enrollmentCounts[selectedCampaign.id] ?? 0) : 0}
-        onClose={() => setSelectedCampaign(null)}
-        onDelete={() => { setSelectedCampaign(null); router.refresh(); }}
       />
     </div>
   );
