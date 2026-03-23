@@ -98,10 +98,7 @@ export async function getEnrolleesForCampaign(
 ): Promise<Array<{ enrollment_id: string; contact_id: string }>> {
   const formula = `FIND("${campaignId}", ARRAYJOIN({קמפיין}))`;
   const records = await airtableBase('נרשמות')
-    .select({
-      filterByFormula: formula,
-      fields: ['איש קשר'],
-    })
+    .select({ filterByFormula: formula })
     .all();
 
   return records.map((r) => ({

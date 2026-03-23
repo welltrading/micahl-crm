@@ -295,7 +295,7 @@ describe('getEnrolleesForCampaign', () => {
     );
   });
 
-  it('queries field [איש קשר] from נרשמות table', async () => {
+  it('queries נרשמות table with FIND formula', async () => {
     mockAll.mockResolvedValueOnce([]);
 
     await getEnrolleesForCampaign('rec123');
@@ -303,7 +303,7 @@ describe('getEnrolleesForCampaign', () => {
     expect(mockTable).toHaveBeenCalledWith('נרשמות');
     expect(mockSelect).toHaveBeenCalledWith(
       expect.objectContaining({
-        fields: ['איש קשר'],
+        filterByFormula: 'FIND("rec123", ARRAYJOIN({קמפיין}))',
       })
     );
   });

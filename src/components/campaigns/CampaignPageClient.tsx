@@ -107,7 +107,7 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
   const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
 
   // Tab state
-  const [activeTab, setActiveTab] = React.useState<'messages' | 'log' | 'enrollees'>('messages');
+  const [activeTab, setActiveTab] = React.useState<'messages' | 'log' | 'enrollees'>('enrollees');
 
   // Log state
   const [logEntries, setLogEntries] = React.useState<MessageLogDisplayEntry[] | null>(null);
@@ -313,9 +313,9 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
         <div className="border-b flex gap-0">
           {(
             [
+              { id: 'enrollees', label: 'נרשמות' },
               { id: 'messages',  label: 'הודעות' },
               { id: 'log',       label: 'יומן שליחות' },
-              { id: 'enrollees', label: 'נרשמות' },
             ] as { id: typeof activeTab; label: string }[]
           ).map(({ id, label }) => (
             <button
