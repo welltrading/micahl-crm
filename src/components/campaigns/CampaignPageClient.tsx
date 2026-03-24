@@ -466,7 +466,7 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
               <div className="flex flex-wrap gap-x-6 gap-y-2">
                 {(
                   [
-                    { value: 'enrolled',   label: 'נרשמות' },
+                    { value: 'enrolled',   label: `נרשמות (${enrollmentCount})` },
                     { value: 'interested', label: 'מתעניינות' },
                     { value: 'both',       label: 'נרשמות + מתעניינות' },
                   ] as { value: BroadcastTarget; label: string }[]
