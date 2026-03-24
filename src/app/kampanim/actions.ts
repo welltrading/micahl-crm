@@ -159,10 +159,10 @@ export type BroadcastTarget = 'enrolled' | 'interested' | 'both';
 export async function broadcastAction(
   campaignId: string,
   messageContent: string,
-  target: BroadcastTarget = 'campaign',
+  target: BroadcastTarget = 'enrolled',
 ): Promise<{ ok: true; queued: true } | { error: string }> {
   if (!messageContent.trim()) return { error: 'messageContent is required' };
-  if (target === 'campaign' && !campaignId) return { error: 'campaignId is required' };
+  if (!campaignId) return { error: 'campaignId is required' };
 
   const webhookUrl = process.env.MAKE_BROADCAST_WEBHOOK_URL;
   if (!webhookUrl) return { error: 'MAKE_BROADCAST_WEBHOOK_URL not configured' };
