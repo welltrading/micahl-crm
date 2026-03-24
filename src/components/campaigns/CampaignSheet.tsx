@@ -97,10 +97,10 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
 
   // Broadcast state
   const [broadcastMessage, setBroadcastMessage] = React.useState('');
-  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('campaign');
+  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('enrolled');
   const [broadcastConfirm, setBroadcastConfirm] = React.useState(false);
   const [broadcastPending, setBroadcastPending] = React.useState(false);
-  const [broadcastResult, setBroadcastResult] = React.useState<{ sent: number; failed: number } | null>(null);
+  const [broadcastResult, setBroadcastResult] = React.useState<{ queued: true } | null>(null);
   const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
 
   // Tab + log state
@@ -310,7 +310,7 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
       return;
     }
 
-    setBroadcastResult({ sent: result.sent, failed: result.failed });
+    setBroadcastResult({ queued: true });
     setBroadcastMessage('');
   }
 
@@ -519,9 +519,9 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
               <div className="flex flex-col gap-1.5">
                 {(
                   [
-                    { value: 'campaign', label: `נרשמות לקמפיין זה (${enrollmentCount})` },
-                    { value: 'all_enrollees', label: 'כל הנרשמות (כל הקמפיינים)' },
-                    { value: 'all_contacts', label: 'כל המתעניינות' },
+                    { value: 'enrolled',   label: 'נרשמות' },
+                    { value: 'interested', label: 'מתענינות' },
+                    { value: 'both',       label: 'נרשמות + מתענינות' },
                   ] as { value: BroadcastTarget; label: string }[]
                 ).map(({ value, label }) => (
                   <label key={value} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -584,7 +584,7 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
 
               {broadcastResult && (
                 <p className="text-sm text-green-700">
-                  נשלחו {broadcastResult.sent} הודעות בהצלחה{broadcastResult.failed > 0 ? `, ${broadcastResult.failed} נכשלו` : ''}
+                  ההודעה נשלחה למייק לעיבוד
                 </p>
               )}
 
