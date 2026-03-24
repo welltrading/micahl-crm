@@ -113,10 +113,14 @@ export async function getEnrolleesForCampaign(
 }
 
 export async function getInterestedCount(): Promise<number> {
-  const records = await airtableBase('מתעניינות')
-    .select({ fields: [] })
-    .all();
-  return records.length;
+  try {
+    const records = await airtableBase('מתעניינות')
+      .select({ fields: [] })
+      .all();
+    return records.length;
+  } catch {
+    return 0;
+  }
 }
 
 export async function getInterestedCountByCampaign(campaignId: string): Promise<number | null> {
