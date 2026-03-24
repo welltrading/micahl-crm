@@ -118,7 +118,8 @@ export async function getInterestedCount(): Promise<number> {
       .select({ fields: [] })
       .all();
     return records.length;
-  } catch {
+  } catch (err) {
+    console.error('getInterestedCount error (check table name):', err);
     return 0;
   }
 }
