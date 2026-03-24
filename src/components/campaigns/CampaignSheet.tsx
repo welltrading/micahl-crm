@@ -97,7 +97,7 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
 
   // Broadcast state
   const [broadcastMessage, setBroadcastMessage] = React.useState('');
-  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('enrolled');
+  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('enrolled_campaign');
   const [broadcastConfirm, setBroadcastConfirm] = React.useState(false);
   const [broadcastPending, setBroadcastPending] = React.useState(false);
   const [broadcastResult, setBroadcastResult] = React.useState<{ queued: true } | null>(null);
@@ -519,9 +519,11 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
               <div className="flex flex-col gap-1.5">
                 {(
                   [
-                    { value: 'enrolled',   label: 'נרשמות' },
-                    { value: 'interested', label: 'מתענינות' },
-                    { value: 'both',       label: 'נרשמות + מתענינות' },
+                    { value: 'enrolled_campaign',                label: `נרשמות (${enrollmentCount})` },
+                    { value: 'interested_campaign',              label: 'מתעניינות לקמפיין זה (?)' },
+                    { value: 'all_interested',                   label: 'כל המתעניינות' },
+                    { value: 'enrolled_and_interested_campaign', label: 'נרשמות + מתעניינות לקמפיין זה' },
+                    { value: 'enrolled_and_all_interested',      label: 'נרשמות + כל המתעניינות' },
                   ] as { value: BroadcastTarget; label: string }[]
                 ).map(({ value, label }) => (
                   <label key={value} className="flex items-center gap-2 text-sm cursor-pointer">

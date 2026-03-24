@@ -75,13 +75,14 @@ function formatEventDate(isoDate: string | undefined): string {
 interface Props {
   campaign: Campaign;
   enrollmentCount: number;
+  allInterestedCount: number;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
+export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCount }: Props) {
   const router = useRouter();
 
   // Messages state
@@ -100,7 +101,7 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
 
   // Broadcast state
   const [broadcastMessage, setBroadcastMessage] = React.useState('');
-  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('enrolled');
+  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('enrolled_campaign');
   const [broadcastConfirm, setBroadcastConfirm] = React.useState(false);
   const [broadcastPending, setBroadcastPending] = React.useState(false);
   const [broadcastResult, setBroadcastResult] = React.useState<{ queued: true } | null>(null);
@@ -463,12 +464,14 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
             <div className="rounded-xl border p-5 flex flex-col gap-4">
               <h3 className="text-sm font-semibold">שליחה ידנית (Broadcast)</h3>
 
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <div className="flex flex-col gap-2">
                 {(
                   [
-                    { value: 'enrolled',   label: `נרשמות (${enrollmentCount})` },
-                    { value: 'interested', label: 'מתעניינות' },
-                    { value: 'both',       label: 'נרשמות + מתעניינות' },
+                    { value: 'enrolled_campaign',                label: `נרשמות לקמפיין זה (${enrollmentCount})` },
+                    { value: 'interested_campaign',              label: 'מתעניינות לקמפיין זה (?)' },
+                    { value: 'all_interested',                   label: `כל המתעניינות (${allInterestedCount})` },
+                    { value: 'enrolled_and_interested_campaign', label: 'נרשמות + מתעניינות לקמפיין זה' },
+                    { value: 'enrolled_and_all_interested',      label: `נרשמות לקמפיין זה + כל המתעניינות (${enrollmentCount} + ${allInterestedCount})` },
                   ] as { value: BroadcastTarget; label: string }[]
                 ).map(({ value, label }) => (
                   <label key={value} className="flex items-center gap-2 text-sm cursor-pointer">

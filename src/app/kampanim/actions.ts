@@ -154,13 +154,18 @@ export async function updateMessageTimeAction(
   }
 }
 
-export type BroadcastTarget = 'enrolled' | 'interested' | 'both';
+export type BroadcastTarget =
+  | 'enrolled_campaign'
+  | 'interested_campaign'
+  | 'all_interested'
+  | 'enrolled_and_interested_campaign'
+  | 'enrolled_and_all_interested';
 
 export async function broadcastAction(
   campaignId: string,
   campaignName: string,
   messageContent: string,
-  target: BroadcastTarget = 'enrolled',
+  target: BroadcastTarget = 'enrolled_campaign',
 ): Promise<{ ok: true; queued: true } | { error: string }> {
   if (!messageContent.trim()) return { error: 'messageContent is required' };
   if (!campaignId) return { error: 'campaignId is required' };
@@ -184,6 +189,44 @@ export async function broadcastAction(
     return { ok: true, queued: true };
   } catch (err) {
     console.error('broadcastAction error:', err);
+    return { error: 'שגיאה בשליחת ה-broadcast. נסי שנית.' };
+  }
+}
+
+export async function broadcastFromPageAction(
+  messageContent: string,
+  target: BroadcastTarget,
+  campaignId?: string,
+  campaignName?: string,
+): Promise<{ ok: true; queued: true } | { error: string }> {
+  if (!messageContent.trim()) return { error: 'messageContent is required' };
+
+  const needsCampaign = target !== 'all_interested';
+  if (needsCampaign && !campaignId) return { error: 'יש לבחור קמפיין עבור יעד זה' };
+
+  const webhookUrl = process.env.MAKE_BROADCAST_WEBHOOK_URL;
+  if (!webhookUrl) return { error: 'MAKE_BROADCAST_WEBHOOK_URL not configured' };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...(campaignId ? { campaign_id: campaignId, campaign_name: campaignName } : {}),
+        message_content: messageContent,
+        target,
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('broadcastFromPageAction Make webhook error:', res.status, text);
+      return { error: 'שגיאה בשליחה למייק. נסי שנית.' };
+    }
+
+    return { ok: true, queued: true };
+  } catch (err) {
+    console.error('broadcastFromPageAction error:', err);
     return { error: 'שגיאה בשליחת ה-broadcast. נסי שנית.' };
   }
 }

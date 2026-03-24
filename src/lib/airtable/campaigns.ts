@@ -112,6 +112,29 @@ export async function getEnrolleesForCampaign(
     }));
 }
 
+export async function getInterestedCount(): Promise<number> {
+  const records = await airtableBase('מתעניינות')
+    .select({ fields: [] })
+    .all();
+  return records.length;
+}
+
+export async function getInterestedCountByCampaign(campaignId: string): Promise<number | null> {
+  try {
+    const records = await airtableBase('מתעניינות')
+      .select({ fields: ['קמפיין'] })
+      .all();
+    const matched = records.filter((r) => {
+      const ids = r.fields['קמפיין'] as string[] | undefined;
+      return ids?.includes(campaignId) ?? false;
+    });
+    return matched.length;
+  } catch {
+    // Field may not exist yet in Airtable
+    return null;
+  }
+}
+
 export async function deleteEnrollment(enrollmentId: string): Promise<void> {
   await airtableBase('נרשמות').destroy(enrollmentId);
 }

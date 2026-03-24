@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Megaphone, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, Megaphone, Users, Settings, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'תפריט', icon: LayoutDashboard },
   { href: '/kampanim', label: 'קמפיינים', icon: Megaphone },
   { href: '/anshei-kesher', label: 'אנשי קשר', icon: Users },
+  { href: '/mishloach-miadi', label: 'הודעות בשליחה מיידית', icon: Send },
   { href: '/hagdarot', label: 'הגדרות', icon: Settings },
 ];
 
