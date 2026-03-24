@@ -1,7 +1,6 @@
 import 'server-only';
 import { airtableBase } from './client';
 import type { ScheduledMessage } from './types';
-import { localIsraelToUTC } from './timezone';
 
 export interface SlotData {
   slot_index: number;    // 1–4
@@ -29,7 +28,7 @@ export async function getScheduledMessagesByCampaign(
     title: (r.fields['כותרת'] as string) ?? '',
     message_content: (r.fields['תוכן ההודעה'] as string) ?? '',
     send_date: (r.fields['תאריך שליחה'] as string) ?? '',
-    send_time: (r.fields['שעת שליחה'] as string) ?? '09:00',
+    send_time: (r.fields['שעת השליחה'] as string) ?? '09:00',
     slot_index: Number(r.fields['מספר הודעה']) || 0,
     status: (r.fields['סטטוס'] as ScheduledMessage['status']) ?? 'pending',
     sent_at: r.fields['נשלח בשעה'] as string | undefined,
@@ -75,13 +74,11 @@ export async function upsertScheduledMessages(
       if (id !== keepId) toDelete.push(id);
     }
 
-    const utcSendAt = localIsraelToUTC(slot.send_date, slot.send_time);
     const sharedFields = {
       'כותרת': slot.title,
       'תוכן ההודעה': slot.message_content,
       'תאריך שליחה': slot.send_date,
-      'שעת שליחה': slot.send_time,
-      'שליחה בשעה': utcSendAt,
+      'שעת השליחה': slot.send_time,
     };
 
     if (keepId) {
@@ -108,14 +105,12 @@ export async function createScheduledMessage(
   campaignId: string,
   slot: SlotData
 ): Promise<string> {
-  const utcSendAt = localIsraelToUTC(slot.send_date, slot.send_time);
   const created = await airtableBase('הודעות מתוזמנות').create({
     'קמפיין': [campaignId],
     'כותרת': slot.title,
     'תוכן ההודעה': slot.message_content,
     'תאריך שליחה': slot.send_date,
-    'שעת שליחה': slot.send_time,
-    'שליחה בשעה': utcSendAt,
+    'שעת השליחה': slot.send_time,
     'מספר הודעה': String(slot.slot_index),
     'סטטוס': 'ממתינה',
   });
@@ -131,10 +126,6 @@ export async function updateScheduledMessage(
   if (fields.title !== undefined) update['כותרת'] = fields.title;
   if (fields.message_content !== undefined) update['תוכן ההודעה'] = fields.message_content;
   if (fields.send_date !== undefined) update['תאריך שליחה'] = fields.send_date;
-  if (fields.send_time !== undefined) update['שעת שליחה'] = fields.send_time;
-  // Write UTC only when we have both date and time to compute from
-  if (fields.send_date !== undefined && fields.send_time !== undefined) {
-    update['שליחה בשעה'] = localIsraelToUTC(fields.send_date, fields.send_time);
-  }
+  if (fields.send_time !== undefined) update['שעת השליחה'] = fields.send_time;
   await airtableBase('הודעות מתוזמנות').update(recordId, update);
 }

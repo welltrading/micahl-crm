@@ -25,6 +25,7 @@ export function ContactsTable({ contacts, onContactClick }: ContactsTableProps) 
             {/* RTL: first in JSX = rightmost visual column */}
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">שם מלא</th>
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">טלפון</th>
+            <th className="px-4 py-3 text-start font-medium text-muted-foreground">כתובת מייל</th>
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">תאריך הצטרפות</th>
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">קמפיין</th>
           </tr>
@@ -37,8 +38,11 @@ export function ContactsTable({ contacts, onContactClick }: ContactsTableProps) 
               className="border-b border-foreground/5 hover:bg-muted/50 cursor-pointer transition-colors"
             >
               <td className="px-4 py-3 font-medium">{contact.full_name}</td>
-              <td className="px-4 py-3 text-muted-foreground" dir="ltr">
-                {formatPhoneDisplay(contact.phone)}
+              <td className="px-4 py-3 text-muted-foreground">
+                <span dir="ltr">{formatPhoneDisplay(contact.phone)}</span>
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {contact.email ?? '—'}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
                 {contact.joined_date

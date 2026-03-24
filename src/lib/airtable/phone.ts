@@ -49,10 +49,16 @@ export function normalizePhone(phone: string): string {
  *
  * Example: 972501234567 → 050-123-4567
  */
-export function formatPhoneDisplay(normalizedPhone: string): string {
-  // normalizedPhone: 972 + 9 digits
-  // local: 0 + 9 digits → split as 0XX-XXX-XXXX
-  const local = '0' + normalizedPhone.slice(3); // remove 972, add 0
-  // local is 10 digits: 0XXXXXXXXX → 0XX-XXX-XXXX
+export function formatPhoneDisplay(phone: string): string {
+  if (!phone) return '';
+  // Normalize first so any input format (e.g. "(052) 229-7909" from Airtable) works
+  let normalized: string;
+  try {
+    normalized = normalizePhone(phone);
+  } catch {
+    return phone; // unrecognized format — show as-is
+  }
+  // normalized: 972 + 9 digits → display as 0XX-XXX-XXXX
+  const local = '0' + normalized.slice(3);
   return `${local.slice(0, 3)}-${local.slice(3, 6)}-${local.slice(6)}`;
 }

@@ -80,14 +80,17 @@ export function ContactsPageClient({ contacts }: ContactsPageClientProps) {
     [contacts, fromStr, toStr]
   );
 
-  // Search filter: match on full_name or phone (strip dashes from phone comparison)
+  // Search filter: match on name, email or phone
   const searchTerm = search.trim().toLowerCase();
   const filtered = searchTerm
     ? contacts.filter((c) => {
-        const nameMatch = c.full_name.toLowerCase().includes(searchTerm);
+        const nameMatch = c.full_name.toLowerCase().includes(searchTerm) ||
+          c.first_name.toLowerCase().includes(searchTerm) ||
+          c.last_name.toLowerCase().includes(searchTerm);
         const phoneMatch = c.phone.includes(searchTerm.replace(/-/g, '')) ||
           c.phone.includes(searchTerm);
-        return nameMatch || phoneMatch;
+        const emailMatch = !!c.email && c.email.toLowerCase().includes(searchTerm);
+        return nameMatch || phoneMatch || emailMatch;
       })
     : contacts;
 

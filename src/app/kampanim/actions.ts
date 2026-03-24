@@ -221,21 +221,13 @@ export async function getEnrolleesAction(
   try {
     if (!campaignId) return { error: 'campaignId is required' };
     const raw = await getEnrolleesForCampaign(campaignId);
-    console.log('[getEnrolleesAction] campaignId:', campaignId, '| raw count:', raw.length, '| contact_ids:', raw.map(e => e.contact_id));
-    const contacts = await Promise.all(raw.map((e) => getContactById(e.contact_id)));
-    console.log('[getEnrolleesAction] contacts resolved:', contacts.map(c => c ? c.id : null));
-    const enrollees: EnrolleeDisplayEntry[] = raw
-      .map((e, i): EnrolleeDisplayEntry | null => {
-        const c = contacts[i];
-        if (!c) return null;
-        return {
-          enrollment_id: e.enrollment_id,
-          full_name: c.full_name,
-          phone: c.phone,
-          email: c.email,
-        };
-      })
-      .filter((e): e is EnrolleeDisplayEntry => e !== null);
+    const enrollees: EnrolleeDisplayEntry[] = raw.map((e) => ({
+      enrollment_id: e.enrollment_id,
+      full_name: e.full_name,
+      phone: e.phone,
+      email: e.email,
+      whatsapp_confirmed: e.whatsapp_confirmed,
+    }));
     return { enrollees };
   } catch (err) {
     console.error('getEnrolleesAction error:', err);

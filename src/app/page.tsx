@@ -1,6 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCampaigns } from "@/lib/airtable/campaigns";
+import { getContacts } from "@/lib/airtable/contacts";
 
-export default function Home() {
+export default async function Home() {
+  const [campaigns, contacts] = await Promise.all([
+    getCampaigns(),
+    getContacts(),
+  ]);
+
+  const activeCampaigns = campaigns.filter((c) => c.status === "active" || c.status === "future").length;
+  const totalContacts = contacts.length;
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">ברוכה הבאה, מיכל</h1>
@@ -14,7 +24,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">--</p>
+            <p className="text-3xl font-bold">{activeCampaigns}</p>
           </CardContent>
         </Card>
 
@@ -25,7 +35,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">--</p>
+            <p className="text-3xl font-bold">{totalContacts}</p>
           </CardContent>
         </Card>
 

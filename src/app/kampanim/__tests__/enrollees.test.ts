@@ -64,7 +64,9 @@ const mockGetContactById = contactsModule.getContactById as jest.MockedFunction<
 
 const MOCK_ENROLLMENT_RAW = {
   enrollment_id: 'recEnroll1',
-  contact_id: 'recContact1',
+  full_name: 'רחל כהן',
+  phone: '972501234567',
+  email: 'rachel@example.com',
 };
 
 const MOCK_CONTACT = {
@@ -84,7 +86,6 @@ describe('getEnrolleesAction', () => {
 
   it('returns { enrollees } array on success', async () => {
     mockGetEnrolleesForCampaign.mockResolvedValueOnce([MOCK_ENROLLMENT_RAW]);
-    mockGetContactById.mockResolvedValueOnce(MOCK_CONTACT);
 
     const result = await getEnrolleesAction('recCamp1');
 
@@ -100,19 +101,14 @@ describe('getEnrolleesAction', () => {
     });
   });
 
-  it('calls getEnrolleesForCampaign then getContactById in parallel for each enrollment', async () => {
-    const enrollment2 = { enrollment_id: 'recEnroll2', contact_id: 'recContact2' };
+  it('returns multiple enrollees directly from enrollment records', async () => {
+    const enrollment2 = { enrollment_id: 'recEnroll2', full_name: 'מרים לוי', phone: '972509876543', email: undefined };
     mockGetEnrolleesForCampaign.mockResolvedValueOnce([MOCK_ENROLLMENT_RAW, enrollment2]);
-    mockGetContactById
-      .mockResolvedValueOnce(MOCK_CONTACT)
-      .mockResolvedValueOnce({ ...MOCK_CONTACT, id: 'recContact2', full_name: 'מרים לוי', phone: '972509876543' });
 
     const result = await getEnrolleesAction('recCamp1');
 
-    expect(mockGetContactById).toHaveBeenCalledTimes(2);
-    expect(mockGetContactById).toHaveBeenCalledWith('recContact1');
-    expect(mockGetContactById).toHaveBeenCalledWith('recContact2');
     expect('enrollees' in result && result.enrollees).toHaveLength(2);
+    expect('enrollees' in result && result.enrollees[1].full_name).toBe('מרים לוי');
   });
 
   it('returns { error: "campaignId is required" } when campaignId is empty string', async () => {
@@ -130,17 +126,14 @@ describe('getEnrolleesAction', () => {
     expect('error' in result).toBe(true);
   });
 
-  it('filters out enrollments where getContactById returns null', async () => {
-    const enrollment2 = { enrollment_id: 'recEnroll2', contact_id: 'recContact2' };
+  it('returns all enrollees including those with empty fields', async () => {
+    const enrollment2 = { enrollment_id: 'recEnroll2', full_name: '', phone: '', email: undefined };
     mockGetEnrolleesForCampaign.mockResolvedValueOnce([MOCK_ENROLLMENT_RAW, enrollment2]);
-    mockGetContactById
-      .mockResolvedValueOnce(MOCK_CONTACT)
-      .mockResolvedValueOnce(null);
 
     const result = await getEnrolleesAction('recCamp1');
 
-    expect('enrollees' in result && result.enrollees).toHaveLength(1);
-    expect('enrollees' in result && result.enrollees[0].enrollment_id).toBe('recEnroll1');
+    expect('enrollees' in result && result.enrollees).toHaveLength(2);
+    expect('enrollees' in result && result.enrollees[1].enrollment_id).toBe('recEnroll2');
   });
 });
 

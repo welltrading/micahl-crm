@@ -14,16 +14,20 @@ interface AddContactModalProps {
 
 export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
   const router = useRouter();
-  const [fullName, setFullName] = React.useState('');
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
   const [phone, setPhone] = React.useState('');
+  const [email, setEmail] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Reset form when modal closes
   React.useEffect(() => {
     if (!open) {
-      setFullName('');
+      setFirstName('');
+      setLastName('');
       setPhone('');
+      setEmail('');
       setError(null);
       setIsSubmitting(false);
     }
@@ -35,7 +39,7 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await addContact(fullName, phone);
+      const result = await addContact(firstName, lastName, phone, email || undefined);
       if ('error' in result) {
         setError(result.error);
         setIsSubmitting(false);
@@ -66,20 +70,37 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
             <Dialog.Title className="text-lg font-semibold">הוספת איש קשר</Dialog.Title>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="fullName" className="text-sm font-medium">
-                  שם מלא
-                </label>
-                <input
-                  id="fullName"
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="לדוגמה: שרה כהן"
-                  className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
-                  disabled={isSubmitting}
-                />
+              <div className="flex gap-3">
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label htmlFor="firstName" className="text-sm font-medium">
+                    שם פרטי
+                  </label>
+                  <input
+                    id="firstName"
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="שרה"
+                    className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label htmlFor="lastName" className="text-sm font-medium">
+                    שם משפחה
+                  </label>
+                  <input
+                    id="lastName"
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="כהן"
+                    className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -93,6 +114,22 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="לדוגמה: 050-123-4567"
+                  dir="ltr"
+                  className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-sm font-medium">
+                  כתובת מייל <span className="text-muted-foreground font-normal">(אופציונלי)</span>
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="sarah@example.com"
                   dir="ltr"
                   className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
                   disabled={isSubmitting}

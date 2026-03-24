@@ -4,10 +4,11 @@
  * Tests:
  *  1. Missing x-webhook-secret header → 401
  *  2. Wrong secret value → 401
- *  3. Valid secret, missing full_name → 400
+ *  3. Valid secret, missing name fields → 400
  *  4. Valid secret, missing phone → 400
- *  5. Valid secret + valid body → calls airtableBase create, returns 201
- *  6. Phone '050-123-4567' stored as '972501234567' (normalizePhone called)
+ *  5. Valid secret + first_name/last_name body → calls airtableBase create, returns 201
+ *  6. Legacy full_name body → splits and creates contact (backwards compat)
+ *  7. Phone '050-123-4567' stored as '972501234567' (normalizePhone called)
  */
 
 // Mock airtableBase before importing route module
@@ -59,7 +60,7 @@ describe('POST /api/webhook/contact', () => {
   });
 
   it('returns 401 when x-webhook-secret header is missing', async () => {
-    const req = makeRequest({}, { full_name: 'שרה לוי', phone: '050-123-4567' });
+    const req = makeRequest({}, { first_name: 'שרה', last_name: 'לוי', phone: '050-123-4567' });
     const res = await POST(req as any);
 
     expect(res.status).toBe(401);
@@ -70,7 +71,7 @@ describe('POST /api/webhook/contact', () => {
   it('returns 401 when x-webhook-secret header has wrong value', async () => {
     const req = makeRequest(
       { 'x-webhook-secret': 'wrong-secret' },
-      { full_name: 'שרה לוי', phone: '050-123-4567' }
+      { first_name: 'שרה', last_name: 'לוי', phone: '050-123-4567' }
     );
     const res = await POST(req as any);
 
@@ -79,7 +80,7 @@ describe('POST /api/webhook/contact', () => {
     expect(json).toEqual({ error: 'Unauthorized' });
   });
 
-  it('returns 400 when full_name is missing', async () => {
+  it('returns 400 when name fields are missing', async () => {
     const req = makeRequest(
       { 'x-webhook-secret': TEST_SECRET },
       { phone: '050-123-4567' }
@@ -94,7 +95,7 @@ describe('POST /api/webhook/contact', () => {
   it('returns 400 when phone is missing', async () => {
     const req = makeRequest(
       { 'x-webhook-secret': TEST_SECRET },
-      { full_name: 'שרה לוי' }
+      { first_name: 'שרה', last_name: 'לוי' }
     );
     const res = await POST(req as any);
 
@@ -103,10 +104,10 @@ describe('POST /api/webhook/contact', () => {
     expect(json).toEqual({ error: 'Missing required fields' });
   });
 
-  it('calls airtableBase(Contacts).create with normalized phone and returns 201', async () => {
+  it('creates contact with first_name + last_name and returns 201', async () => {
     const req = makeRequest(
       { 'x-webhook-secret': TEST_SECRET },
-      { full_name: 'שרה לוי', phone: '050-123-4567' }
+      { first_name: 'שרה', last_name: 'לוי', phone: '050-123-4567' }
     );
     const res = await POST(req as any);
 
@@ -114,11 +115,28 @@ describe('POST /api/webhook/contact', () => {
     const json = await res.json();
     expect(json).toEqual({ success: true });
 
-    expect(mockTable).toHaveBeenCalledWith('Contacts');
+    expect(mockTable).toHaveBeenCalledWith('מתענינות');
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        'שם מלא': 'שרה לוי',
+        'שם פרטי': 'שרה',
+        'שם משפחה': 'לוי',
         'טלפון': '972501234567',
+      })
+    );
+  });
+
+  it('supports legacy full_name payload by splitting on first space', async () => {
+    const req = makeRequest(
+      { 'x-webhook-secret': TEST_SECRET },
+      { full_name: 'דינה אברהם כהן', phone: '050-123-4567' }
+    );
+    const res = await POST(req as any);
+
+    expect(res.status).toBe(201);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        'שם פרטי': 'דינה',
+        'שם משפחה': 'אברהם כהן',
       })
     );
   });
@@ -126,7 +144,7 @@ describe('POST /api/webhook/contact', () => {
   it('normalizes phone 050-123-4567 to 972501234567 before storing', async () => {
     const req = makeRequest(
       { 'x-webhook-secret': TEST_SECRET },
-      { full_name: 'דינה כהן', phone: '050-123-4567' }
+      { first_name: 'דינה', last_name: 'כהן', phone: '050-123-4567' }
     );
     await POST(req as any);
 

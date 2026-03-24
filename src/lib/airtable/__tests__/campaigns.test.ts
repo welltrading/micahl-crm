@@ -257,11 +257,11 @@ describe('getEnrolleesForCampaign', () => {
     const mockRecords = [
       {
         id: 'recEnroll1',
-        fields: { 'קמפיין': ['rec123'], 'איש קשר': ['recContact1'] },
+        fields: { 'קמפיין': ['rec123'], 'שם מלא': 'רחל כהן', 'טלפון': '972501234567', 'כתובת מייל': 'rachel@example.com' },
       },
       {
         id: 'recEnroll2',
-        fields: { 'קמפיין': ['rec123'], 'איש קשר': ['recContact2'] },
+        fields: { 'קמפיין': ['rec123'], 'שם מלא': 'מרים לוי', 'טלפון': '972509876543' },
       },
     ];
     mockAll.mockResolvedValueOnce(mockRecords);
@@ -269,14 +269,14 @@ describe('getEnrolleesForCampaign', () => {
     const result = await getEnrolleesForCampaign('rec123');
 
     expect(result).toHaveLength(2);
-    expect(result[0]).toEqual({ enrollment_id: 'recEnroll1', contact_id: 'recContact1' });
-    expect(result[1]).toEqual({ enrollment_id: 'recEnroll2', contact_id: 'recContact2' });
+    expect(result[0]).toEqual({ enrollment_id: 'recEnroll1', full_name: 'רחל כהן', phone: '972501234567', email: 'rachel@example.com' });
+    expect(result[1]).toEqual({ enrollment_id: 'recEnroll2', full_name: 'מרים לוי', phone: '972509876543', email: undefined });
   });
 
   it('fetches all records from נרשמות and filters by campaignId', async () => {
     const mockRecords = [
-      { id: 'recEnrollA', fields: { 'קמפיין': ['rec123'], 'איש קשר': ['recContactA'] } },
-      { id: 'recEnrollB', fields: { 'קמפיין': ['recOTHER'], 'איש קשר': ['recContactB'] } },
+      { id: 'recEnrollA', fields: { 'קמפיין': ['rec123'], 'שם מלא': 'רחל כהן', 'טלפון': '972501234567' } },
+      { id: 'recEnrollB', fields: { 'קמפיין': ['recOTHER'], 'שם מלא': 'אחרת', 'טלפון': '972500000000' } },
     ];
     mockAll.mockResolvedValueOnce(mockRecords);
 
@@ -285,21 +285,22 @@ describe('getEnrolleesForCampaign', () => {
     expect(mockTable).toHaveBeenCalledWith('נרשמות');
     expect(result).toHaveLength(1);
     expect(result[0].enrollment_id).toBe('recEnrollA');
-    expect(result[0].contact_id).toBe('recContactA');
+    expect(result[0].full_name).toBe('רחל כהן');
   });
 
-  it('handles missing איש קשר linked record gracefully', async () => {
+  it('handles missing fields gracefully', async () => {
     const mockRecords = [
       {
         id: 'recEnroll4',
-        fields: { 'קמפיין': ['rec123'] /* no 'איש קשר' field */ },
+        fields: { 'קמפיין': ['rec123'] },
       },
     ];
     mockAll.mockResolvedValueOnce(mockRecords);
 
     const result = await getEnrolleesForCampaign('rec123');
 
-    expect(result[0].contact_id).toBe('');
+    expect(result[0].full_name).toBe('');
+    expect(result[0].phone).toBe('');
   });
 
   it('returns empty array when no enrollments found', async () => {

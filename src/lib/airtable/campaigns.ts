@@ -95,7 +95,7 @@ export async function deleteCampaign(id: string): Promise<void> {
 
 export async function getEnrolleesForCampaign(
   campaignId: string
-): Promise<Array<{ enrollment_id: string; contact_id: string }>> {
+): Promise<Array<{ enrollment_id: string; full_name: string; phone: string; email?: string; whatsapp_confirmed?: boolean }>> {
   const records = await airtableBase('נרשמות').select().all();
 
   return records
@@ -105,7 +105,10 @@ export async function getEnrolleesForCampaign(
     })
     .map((r) => ({
       enrollment_id: r.id,
-      contact_id: ((r.fields['איש קשר'] as string[]) ?? [])[0] ?? '',
+      full_name: (r.fields['שם מלא'] as string) ?? '',
+      phone: (r.fields['טלפון'] as string) ?? '',
+      email: r.fields['כתובת מייל'] as string | undefined,
+      whatsapp_confirmed: r.fields['אישרה וואטסאפ'] as boolean | undefined,
     }));
 }
 

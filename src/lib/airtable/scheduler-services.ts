@@ -9,8 +9,7 @@ import type { ScheduledMessage, CampaignEnrollment } from './types';
 
 // Hebrew field names for ScheduledMessages table
 const STATUS_FIELD = 'סטטוס';
-const SEND_AT_FIELD = 'שליחה בשעה';
-const SENT_AT_FIELD = 'נשלח בשעה';
+const SEND_AT_FIELD = 'נשלח בשעה';
 const CONTENT_FIELD = 'תוכן ההודעה';
 const TITLE_FIELD = 'כותרת';
 const CAMPAIGN_FIELD = 'קמפיין';
@@ -50,7 +49,7 @@ function mapRecord(record: { id: string; fields: Record<string, unknown> }): Sch
     send_time: '',
     slot_index: Number(f[SLOT_FIELD] ?? 0),
     status: mapAirtableStatus(f[STATUS_FIELD] as string | undefined),
-    sent_at: (f[SENT_AT_FIELD] as string) ?? undefined,
+    sent_at: (f[SEND_AT_FIELD] as string) ?? undefined,
   };
 }
 
@@ -59,7 +58,7 @@ function mapRecord(record: { id: string; fields: Record<string, unknown> }): Sch
  */
 export async function getPendingMessagesDue(nowIso: string): Promise<ScheduledMessage[]> {
   const formula = `AND({${STATUS_FIELD}} = '${STATUS_PENDING}', IS_BEFORE({${SEND_AT_FIELD}}, NOW()))`;
-  const records = await airtableBase('ScheduledMessages')
+  const records = await airtableBase('הודעות מתוזמנות')
     .select({ filterByFormula: formula })
     .all();
   return records.map(mapRecord);
@@ -69,16 +68,16 @@ export async function getPendingMessagesDue(nowIso: string): Promise<ScheduledMe
  * Mark a ScheduledMessage as 'בשליחה' (sending) — idempotent transition lock.
  */
 export async function markMessageSending(id: string): Promise<void> {
-  await airtableBase('ScheduledMessages').update(id, { [STATUS_FIELD]: STATUS_SENDING });
+  await airtableBase('הודעות מתוזמנות').update(id, { [STATUS_FIELD]: STATUS_SENDING });
 }
 
 /**
  * Mark a ScheduledMessage as 'נשלחה' (sent) and record the sent timestamp.
  */
 export async function markMessageSent(id: string): Promise<void> {
-  await airtableBase('ScheduledMessages').update(id, {
+  await airtableBase('הודעות מתוזמנות').update(id, {
     [STATUS_FIELD]: STATUS_SENT,
-    [SENT_AT_FIELD]: new Date().toISOString(),
+    [SEND_AT_FIELD]: new Date().toISOString(),
   });
 }
 
@@ -86,7 +85,7 @@ export async function markMessageSent(id: string): Promise<void> {
  * Mark a ScheduledMessage as 'נכשלה' (failed).
  */
 export async function markMessageFailed(id: string): Promise<void> {
-  await airtableBase('ScheduledMessages').update(id, { [STATUS_FIELD]: STATUS_FAILED });
+  await airtableBase('הודעות מתוזמנות').update(id, { [STATUS_FIELD]: STATUS_FAILED });
 }
 
 /**
@@ -95,12 +94,12 @@ export async function markMessageFailed(id: string): Promise<void> {
  */
 export async function resetStuckSendingMessages(): Promise<void> {
   const formula = `{${STATUS_FIELD}} = '${STATUS_SENDING}'`;
-  const records = await airtableBase('ScheduledMessages')
+  const records = await airtableBase('הודעות מתוזמנות')
     .select({ filterByFormula: formula })
     .all();
 
   for (const record of records) {
-    await airtableBase('ScheduledMessages').update(record.id, {
+    await airtableBase('הודעות מתוזמנות').update(record.id, {
       [STATUS_FIELD]: STATUS_PENDING,
     });
   }
@@ -114,7 +113,7 @@ export async function getEnrollmentsForCampaign(
   campaignId: string
 ): Promise<CampaignEnrollment[]> {
   const formula = `FIND("${campaignId}", ARRAYJOIN({${CAMPAIGN_FIELD}}))`;
-  const records = await airtableBase('CampaignEnrollments')
+  const records = await airtableBase('נרשמות')
     .select({ filterByFormula: formula })
     .all();
 

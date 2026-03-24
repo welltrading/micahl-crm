@@ -46,7 +46,7 @@ export async function createMessageLogEntry(entry: MessageLogEntry): Promise<voi
     fields['הודעת שגיאה'] = entry.error_message;
   }
 
-  await airtableBase('MessageLog').create(fields);
+  await airtableBase('יומן הודעות').create(fields);
 }
 
 /**
@@ -56,7 +56,7 @@ export async function createMessageLogEntry(entry: MessageLogEntry): Promise<voi
 export async function getMessageLogByCampaign(
   campaignId: string
 ): Promise<MessageLogDisplayEntry[]> {
-  const records = await airtableBase('MessageLog')
+  const records = await airtableBase('יומן הודעות')
     .select({
       filterByFormula: `FIND("${campaignId}", ARRAYJOIN({קמפיין}))`,
     })

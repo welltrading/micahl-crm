@@ -49,6 +49,7 @@ export interface EnrolleeDisplayEntry {
   full_name: string;
   phone: string;
   email?: string;
+  whatsapp_confirmed?: boolean;
 }
 
 export interface MessageLog {

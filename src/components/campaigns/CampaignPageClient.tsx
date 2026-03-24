@@ -645,8 +645,9 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">שם מלא</th>
-                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">טלפון</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">טלפון</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">אימייל</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">אישרה וואטסאפ</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">ביטול רישום</th>
                     </tr>
                   </thead>
@@ -654,10 +655,13 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
                     {enrolleeEntries.map((entry, idx) => (
                       <tr key={entry.enrollment_id} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                         <td className="px-4 py-3">{entry.full_name}</td>
-                        <td className="px-4 py-3 tabular-nums" dir="ltr">
+                        <td className="px-4 py-3 tabular-nums text-center" dir="ltr">
                           {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{entry.email ?? '—'}</td>
+                        <td className="px-4 py-3 text-center text-green-600">
+                          {entry.whatsapp_confirmed ? '✓' : <span className="text-muted-foreground">—</span>}
+                        </td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => handleRemove(entry.enrollment_id)}

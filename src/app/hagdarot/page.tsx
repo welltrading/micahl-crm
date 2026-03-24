@@ -119,7 +119,7 @@ export default async function HagdarotPage() {
                 <li>
                   <span className="font-medium">Body:</span>{' '}
                   <code className="bg-muted px-1 py-0.5 rounded">
-                    {'{ "full_name": "שם", "phone": "טלפון" }'}
+                    {'{ "first_name": "שם פרטי", "last_name": "שם משפחה", "phone": "טלפון", "email": "מייל (אופציונלי)" }'}
                   </code>
                 </li>
               </ul>
