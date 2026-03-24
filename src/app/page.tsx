@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCampaigns } from "@/lib/airtable/campaigns";
 import { getContacts } from "@/lib/airtable/contacts";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const [campaigns, contacts] = await Promise.all([
     getCampaigns(),
