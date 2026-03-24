@@ -160,12 +160,12 @@ export function BroadcastPageClient({ campaigns, allInterestedCount, enrollmentC
             <label className="text-sm font-semibold" htmlFor="message-input">תוכן ההודעה</label>
             <textarea
               id="message-input"
-              rows={14}
               dir="rtl"
               placeholder="הקלידי את ההודעה..."
               value={message}
               onChange={(e) => { setMessage(e.target.value); setResult(null); setError(null); }}
               disabled={pending}
+              style={{ minHeight: '280px' }}
               className="w-full resize-y rounded-lg border px-3 py-2 text-sm bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
             />
           </div>
