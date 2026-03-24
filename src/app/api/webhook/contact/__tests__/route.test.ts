@@ -115,7 +115,7 @@ describe('POST /api/webhook/contact', () => {
     const json = await res.json();
     expect(json).toEqual({ success: true });
 
-    expect(mockTable).toHaveBeenCalledWith('מתענינות');
+    expect(mockTable).toHaveBeenCalledWith('מתעניינות');
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         'שם פרטי': 'שרה',

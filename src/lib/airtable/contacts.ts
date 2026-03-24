@@ -6,7 +6,7 @@ import { normalizePhone } from './phone';
 // API field name = Hebrew display name in this project
 
 export async function getContacts(): Promise<Contact[]> {
-  const records = await airtableBase('מתענינות')
+  const records = await airtableBase('מתעניינות')
     .select()
     .all();
 
@@ -27,7 +27,7 @@ export async function getContacts(): Promise<Contact[]> {
 
 export async function getContactById(id: string): Promise<Contact | null> {
   try {
-    const record = await airtableBase('מתענינות').find(id);
+    const record = await airtableBase('מתעניינות').find(id);
     return {
       id: record.id,
       first_name: (record.fields['שם פרטי'] as string) ?? '',
@@ -57,7 +57,7 @@ export async function createContact(input: {
 }): Promise<{ success: true }> {
   const today = new Date().toISOString().split('T')[0];
 
-  await airtableBase('מתענינות').create(
+  await airtableBase('מתעניינות').create(
     {
       'שם פרטי': input.first_name,
       'שם משפחה': input.last_name,

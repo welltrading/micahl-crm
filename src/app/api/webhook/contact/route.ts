@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   // --- Write to Airtable ---
   const today = new Date().toISOString().split('T')[0];
 
-  await airtableBase('מתענינות').create({
+  await airtableBase('מתעניינות').create({
     'שם פרטי': firstName,
     'שם משפחה': lastName,
     'טלפון': normalizedPhone,
