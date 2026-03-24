@@ -302,7 +302,7 @@ export function CampaignSheet({ campaign, enrollmentCount = 0, onClose, onDelete
     setBroadcastResult(null);
     setBroadcastConfirm(false);
 
-    const result = await broadcastAction(campaign.id, broadcastMessage, broadcastTarget);
+    const result = await broadcastAction(campaign.id, campaign.campaign_name, broadcastMessage, broadcastTarget);
     setBroadcastPending(false);
 
     if ('error' in result) {

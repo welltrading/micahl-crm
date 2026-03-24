@@ -158,6 +158,7 @@ export type BroadcastTarget = 'enrolled' | 'interested' | 'both';
 
 export async function broadcastAction(
   campaignId: string,
+  campaignName: string,
   messageContent: string,
   target: BroadcastTarget = 'enrolled',
 ): Promise<{ ok: true; queued: true } | { error: string }> {
@@ -171,7 +172,7 @@ export async function broadcastAction(
     const res = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ campaign_id: campaignId, message_content: messageContent, target }),
+      body: JSON.stringify({ campaign_id: campaignId, campaign_name: campaignName, message_content: messageContent, target }),
     });
 
     if (!res.ok) {

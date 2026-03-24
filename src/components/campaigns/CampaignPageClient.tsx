@@ -237,7 +237,7 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
     setBroadcastError(null);
     setBroadcastResult(null);
     setBroadcastConfirm(false);
-    const result = await broadcastAction(campaign.id, broadcastMessage, broadcastTarget);
+    const result = await broadcastAction(campaign.id, campaign.campaign_name, broadcastMessage, broadcastTarget);
     setBroadcastPending(false);
     if ('error' in result) { setBroadcastError(result.error); return; }
     setBroadcastResult({ queued: true });
