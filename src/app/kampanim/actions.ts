@@ -160,42 +160,27 @@ export async function broadcastAction(
   campaignId: string,
   messageContent: string,
   target: BroadcastTarget = 'campaign',
-): Promise<{ ok: true; sent: number; failed: number } | { error: string }> {
+): Promise<{ ok: true; queued: true } | { error: string }> {
   if (!messageContent.trim()) return { error: 'messageContent is required' };
+  if (target === 'campaign' && !campaignId) return { error: 'campaignId is required' };
+
+  const webhookUrl = process.env.MAKE_BROADCAST_WEBHOOK_URL;
+  if (!webhookUrl) return { error: 'MAKE_BROADCAST_WEBHOOK_URL not configured' };
 
   try {
-    let contacts: Contact[] = [];
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: campaignId, message_content: messageContent, target }),
+    });
 
-    if (target === 'campaign') {
-      if (!campaignId) return { error: 'campaignId is required' };
-      const enrollments = await getEnrollmentsForCampaign(campaignId);
-      const results = await Promise.all(enrollments.map((e) => getContactById(e.contact_id[0])));
-      contacts = results.filter((c): c is Contact => c !== null);
-    } else if (target === 'all_contacts') {
-      contacts = await getContacts();
-    } else {
-      // all_enrollees — unique contacts across all campaigns
-      const ids = await getEnrolledContactIds();
-      const results = await Promise.all(ids.map((id) => getContactById(id)));
-      contacts = results.filter((c): c is Contact => c !== null);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('broadcastAction Make webhook error:', res.status, text);
+      return { error: 'שגיאה בשליחה למייק. נסי שנית.' };
     }
 
-    let sent = 0;
-    let failed = 0;
-
-    for (const contact of contacts) {
-      try {
-        const chatId = normalizePhone(contact.phone) + '@c.us';
-        await sendWhatsAppMessage(chatId, messageContent);
-        sent++;
-      } catch {
-        failed++;
-      }
-      // GREEN API minimum 500ms delay; use 1000ms for safety
-      await new Promise(r => setTimeout(r, 1000));
-    }
-
-    return { ok: true, sent, failed };
+    return { ok: true, queued: true };
   } catch (err) {
     console.error('broadcastAction error:', err);
     return { error: 'שגיאה בשליחת ה-broadcast. נסי שנית.' };
