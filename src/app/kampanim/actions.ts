@@ -154,7 +154,7 @@ export async function updateMessageTimeAction(
   }
 }
 
-export type BroadcastTarget = 'campaign' | 'all_contacts' | 'all_enrollees';
+export type BroadcastTarget = 'enrolled' | 'interested' | 'both';
 
 export async function broadcastAction(
   campaignId: string,

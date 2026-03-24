@@ -100,10 +100,10 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
 
   // Broadcast state
   const [broadcastMessage, setBroadcastMessage] = React.useState('');
-  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('campaign');
+  const [broadcastTarget, setBroadcastTarget] = React.useState<BroadcastTarget>('enrolled');
   const [broadcastConfirm, setBroadcastConfirm] = React.useState(false);
   const [broadcastPending, setBroadcastPending] = React.useState(false);
-  const [broadcastResult, setBroadcastResult] = React.useState<{ sent: number; failed: number } | null>(null);
+  const [broadcastResult, setBroadcastResult] = React.useState<{ queued: true } | null>(null);
   const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
 
   // Tab state
@@ -240,7 +240,7 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
     const result = await broadcastAction(campaign.id, broadcastMessage, broadcastTarget);
     setBroadcastPending(false);
     if ('error' in result) { setBroadcastError(result.error); return; }
-    setBroadcastResult({ sent: result.sent, failed: result.failed });
+    setBroadcastResult({ queued: true });
     setBroadcastMessage('');
   }
 
@@ -466,9 +466,9 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
               <div className="flex flex-wrap gap-x-6 gap-y-2">
                 {(
                   [
-                    { value: 'campaign',      label: `נרשמות לקמפיין זה (${enrollmentCount})` },
-                    { value: 'all_enrollees', label: 'כל הנרשמות (כל הקמפיינים)' },
-                    { value: 'all_contacts',  label: 'כל המתעניינות' },
+                    { value: 'enrolled',   label: 'נרשמות' },
+                    { value: 'interested', label: 'מתעניינות' },
+                    { value: 'both',       label: 'נרשמות + מתעניינות' },
                   ] as { value: BroadcastTarget; label: string }[]
                 ).map(({ value, label }) => (
                   <label key={value} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -501,7 +501,7 @@ export function CampaignPageClient({ campaign, enrollmentCount }: Props) {
                   <div>
                     {broadcastResult && (
                       <p className="text-sm text-green-700">
-                        נשלחו {broadcastResult.sent} הודעות{broadcastResult.failed > 0 ? `, ${broadcastResult.failed} נכשלו` : ''}
+                        ההודעה נשלחה למייק לעיבוד
                       </p>
                     )}
                     {broadcastError && <p className="text-sm text-red-600">{broadcastError}</p>}
