@@ -62,14 +62,15 @@ export default async function HagdarotPage() {
               העתיקי את ה-<strong>Instance ID</strong> ואת ה-<strong>API Token</strong> מדף ה-Instance
             </li>
             <li>
-              הכניסי את הערכים ב-Railway Environment Variables:
-              <ul className="mt-2 ms-6 space-y-1 list-none">
+              הכניסי את הערכים ב-Vercel Environment Variables:
+              <ul className="mt-2 ms-6 space-y-1 list-none text-xs">
+                <li>כנסי ל-<strong>vercel.com</strong> → הפרויקט → <strong>Settings</strong> → <strong>Environment Variables</strong></li>
                 <li>
-                  <code className="bg-muted px-1.5 py-0.5 rounded text-xs">GREEN_API_INSTANCE_ID</code>
+                  <code className="bg-muted px-1.5 py-0.5 rounded">GREEN_API_INSTANCE_ID</code>
                   {' '}— מזהה ה-Instance
                 </li>
                 <li>
-                  <code className="bg-muted px-1.5 py-0.5 rounded text-xs">GREEN_API_TOKEN</code>
+                  <code className="bg-muted px-1.5 py-0.5 rounded">GREEN_API_TOKEN</code>
                   {' '}— הטוקן שלך
                 </li>
               </ul>
@@ -77,7 +78,7 @@ export default async function HagdarotPage() {
             <li>
               חברי את חשבון הוואטסאפ שלך ל-Instance דרך ממשק GREEN API (סריקת QR)
             </li>
-            <li>שמרי ואתחלי מחדש את השירות ב-Railway</li>
+            <li>שמרי ב-Vercel ועשי <strong>Redeploy</strong></li>
           </ol>
         </CardContent>
       </Card>
