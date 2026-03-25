@@ -147,6 +147,11 @@ Plans:
 **Gap Closure:** Closes gaps from audit:
 - Dashboard `/` stat cards hardcoded `"--"` — replace with live contact/campaign counts
 - Dead code removal: `upsertScheduledMessages`, `updateMessageTimeAction`
+**Plans:** 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Service layer additions (getMessagesSentThisMonth, getInterestedCountsAllCampaigns, getMessageLogSentCountsByCampaign) + full dashboard page.tsx rewrite
+- [ ] 09-02-PLAN.md — Dead code removal: upsertScheduledMessages + tests + updateMessageTimeAction
 
 ### Phase 10: Campaign Enrollees Tab
 **Goal:** מיכל יכולה לראות את כל הנרשמות לקמפיין עם שם, טלפון, אימייל ואישור וואטסאפ, ולבטל רישום — ישירות מתוך CampaignSheet ללא פתיחת Airtable
@@ -173,5 +178,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 6. Stats + Polish | 2/2 | Complete   | 2026-03-19 |
 | 7. Fix Enrollment Field Name + Test Mocks | 1/2 | In Progress|  |
 | 8. Webhook Campaign Auto-Enrollment | 0/0 | Pending    |  |
-| 9. Dashboard Live Stats + Dead Code Cleanup | 0/0 | Pending    |  |
+| 9. Dashboard Live Stats + Dead Code Cleanup | 0/2 | Pending    |  |
 | 10. Campaign Enrollees Tab | 1/2 | In Progress|  |
