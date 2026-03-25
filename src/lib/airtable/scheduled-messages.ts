@@ -1,5 +1,6 @@
 import 'server-only';
 import { airtableBase } from './client';
+import { localIsraelToUTC } from './timezone';
 import type { ScheduledMessage } from './types';
 
 export interface SlotData {
@@ -35,71 +36,6 @@ export async function getScheduledMessagesByCampaign(
   }));
 }
 
-export async function upsertScheduledMessages(
-  campaignId: string,
-  slots: SlotData[]
-): Promise<void> {
-  const filled = slots.filter((s) => s.message_content.trim() !== '');
-  if (filled.length === 0) return;
-
-  // Fetch existing records for this campaign
-  const existing = await airtableBase('הודעות מתוזמנות')
-    .select({ filterByFormula: `FIND("${campaignId}", ARRAYJOIN({קמפיין}))` })
-    .all();
-
-  // Group by slot_index — may have duplicates from past bugs
-  const bySlot = new Map<number, string[]>(); // slot_index → [recordId, ...]
-  for (const r of existing) {
-    const idx = Number(r.fields['מספר הודעה']);
-    if (idx) {
-      const arr = bySlot.get(idx) ?? [];
-      arr.push(r.id);
-      bySlot.set(idx, arr);
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const toCreate: { fields: Record<string, any> }[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const toUpdate: { id: string; fields: Record<string, any> }[] = [];
-  const toDelete: string[] = [];
-
-  for (const slot of filled) {
-    const candidates = bySlot.get(slot.slot_index) ?? [];
-    // Pick the record to keep: prefer slot.recordId if provided, else first candidate by slot_index
-    const keepId = slot.recordId ?? candidates[0];
-
-    // All other candidates for this slot_index are duplicates — delete them
-    for (const id of candidates) {
-      if (id !== keepId) toDelete.push(id);
-    }
-
-    const sharedFields = {
-      'כותרת': slot.title,
-      'תוכן ההודעה': slot.message_content,
-      'תאריך שליחה': slot.send_date,
-      'שעת השליחה': slot.send_time,
-    };
-
-    if (keepId) {
-      toUpdate.push({ id: keepId, fields: sharedFields });
-    } else {
-      toCreate.push({
-        fields: {
-          'קמפיין': [campaignId],
-          ...sharedFields,
-          'מספר הודעה': String(slot.slot_index),
-          'סטטוס': 'ממתינה',
-        },
-      });
-    }
-  }
-
-  // Delete duplicates first, then create/update
-  if (toDelete.length > 0) await airtableBase('הודעות מתוזמנות').destroy(toDelete);
-  if (toCreate.length > 0) await airtableBase('הודעות מתוזמנות').create(toCreate);
-  if (toUpdate.length > 0) await airtableBase('הודעות מתוזמנות').update(toUpdate);
-}
 
 export async function createScheduledMessage(
   campaignId: string,
@@ -127,5 +63,8 @@ export async function updateScheduledMessage(
   if (fields.message_content !== undefined) update['תוכן ההודעה'] = fields.message_content;
   if (fields.send_date !== undefined) update['תאריך שליחה'] = fields.send_date;
   if (fields.send_time !== undefined) update['שעת השליחה'] = fields.send_time;
+  if (fields.send_date !== undefined && fields.send_time !== undefined) {
+    update['שליחה בשעה'] = localIsraelToUTC(fields.send_date, fields.send_time);
+  }
   await airtableBase('הודעות מתוזמנות').update(recordId, update);
 }
