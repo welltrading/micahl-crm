@@ -142,18 +142,20 @@ export async function getEnrolledContactIds(): Promise<string[]> {
  */
 export async function getInterestedByCampaign(campaignId: string): Promise<InterestedDisplayEntry[]> {
   const records = await airtableBase('מתעניינות')
-    .select({
-      filterByFormula: `FIND("${campaignId}", ARRAYJOIN({קמפיין}))`,
-      fields: ['שם מלא', 'טלפון', 'כתובת מייל'],
-    })
+    .select({ fields: ['שם מלא', 'טלפון', 'כתובת מייל', 'קמפיין'] })
     .all();
 
-  return records.map((r) => ({
-    id: r.id,
-    full_name: (r.fields['שם מלא'] as string) ?? '',
-    phone: (r.fields['טלפון'] as string) ?? '',
-    email: r.fields['כתובת מייל'] as string | undefined,
-  }));
+  return records
+    .filter((r) => {
+      const ids = r.fields['קמפיין'] as string[] | undefined;
+      return ids?.includes(campaignId);
+    })
+    .map((r) => ({
+      id: r.id,
+      full_name: (r.fields['שם מלא'] as string) ?? '',
+      phone: (r.fields['טלפון'] as string) ?? '',
+      email: r.fields['כתובת מייל'] as string | undefined,
+    }));
 }
 
 // --- Private helpers ---
