@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCampaigns, getInterestedCount, getEnrollmentCountsByCampaign, getInterestedCountsAllCampaigns } from "@/lib/airtable/campaigns";
-import { getContacts } from "@/lib/airtable/contacts";
 import { getGreenApiState } from "@/lib/airtable/green-api";
 import { getMessagesSentThisMonth, getMessageLogSentCountsByCampaign } from "@/lib/airtable/message-log";
 
@@ -26,7 +26,6 @@ function conversionRate(enrolled: number, interested: number | undefined): strin
 export default async function Home() {
   const [
     campaigns,
-    contacts,
     greenApiState,
     interestedCountGlobal,
     enrollmentCounts,
@@ -35,7 +34,6 @@ export default async function Home() {
     sentCountsByCampaign,
   ] = await Promise.all([
     getCampaigns(),
-    getContacts(),
     getGreenApiState(),
     getInterestedCount(),
     getEnrollmentCountsByCampaign(),
@@ -45,7 +43,7 @@ export default async function Home() {
   ]);
 
   const activeCampaigns = campaigns.filter((c) => c.status === 'active' || c.status === 'future').length;
-  const totalContacts = contacts.length;
+  const totalEnrollments = Object.values(enrollmentCounts).reduce((sum, n) => sum + n, 0);
 
   const isConnected = greenApiState === 'authorized';
   const isUnknown = greenApiState === 'unknown';
@@ -70,11 +68,11 @@ export default async function Home() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              אנשי קשר
+              נרשמות
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{totalContacts}</p>
+            <p className="text-3xl font-bold">{totalEnrollments}</p>
           </CardContent>
         </Card>
 
@@ -133,7 +131,8 @@ export default async function Home() {
               : '—';
 
             return (
-              <Card key={campaign.id}>
+              <Link key={campaign.id} href={`/kampanim/${campaign.id}`} className="block hover:opacity-80 transition-opacity">
+              <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base font-semibold leading-tight">
@@ -153,6 +152,7 @@ export default async function Home() {
                   <p>הודעות שנשלחו: {sent}</p>
                 </CardContent>
               </Card>
+              </Link>
             );
           })}
         </div>
