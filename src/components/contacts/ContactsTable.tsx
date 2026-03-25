@@ -23,6 +23,7 @@ export function ContactsTable({ contacts, onContactClick }: ContactsTableProps) 
         <thead>
           <tr className="border-b border-foreground/10 bg-muted/50">
             {/* RTL: first in JSX = rightmost visual column */}
+            <th className="px-4 py-3 text-start font-medium text-muted-foreground w-10">#</th>
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">שם מלא</th>
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">טלפון</th>
             <th className="px-4 py-3 text-start font-medium text-muted-foreground">כתובת מייל</th>
@@ -31,12 +32,13 @@ export function ContactsTable({ contacts, onContactClick }: ContactsTableProps) 
           </tr>
         </thead>
         <tbody>
-          {contacts.map((contact) => (
+          {contacts.map((contact, idx) => (
             <tr
               key={contact.id}
               onClick={() => onContactClick(contact)}
               className="border-b border-foreground/5 hover:bg-muted/50 cursor-pointer transition-colors"
             >
+              <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
               <td className="px-4 py-3 font-medium">{contact.full_name}</td>
               <td className="px-4 py-3 text-muted-foreground">
                 <span dir="ltr">{formatPhoneDisplay(contact.phone)}</span>
