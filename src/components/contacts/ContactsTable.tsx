@@ -49,7 +49,9 @@ export function ContactsTable({ contacts, onContactClick }: ContactsTableProps) 
                   ? new Date(contact.joined_date).toLocaleDateString('he-IL')
                   : '—'}
               </td>
-              <td className="px-4 py-3 text-muted-foreground">—</td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {contact.campaign_names?.length ? contact.campaign_names.join(', ') : '—'}
+              </td>
             </tr>
           ))}
         </tbody>

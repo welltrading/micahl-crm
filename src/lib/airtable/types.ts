@@ -21,6 +21,8 @@ export interface Contact {
   joined_date?: string;
   notes?: string;
   created_at: string;
+  campaign_ids?: string[];
+  campaign_names?: string[];
 }
 
 export interface CampaignEnrollment {

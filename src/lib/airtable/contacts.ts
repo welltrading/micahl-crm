@@ -21,6 +21,7 @@ export async function getContacts(): Promise<Contact[]> {
       joined_date: r.fields['תאריך הצטרפות'] as string | undefined,
       notes: r.fields['הערות'] as string | undefined,
       created_at: r._rawJson.createdTime as string,
+      campaign_ids: (r.fields['קמפיין'] as string[] | undefined) ?? [],
     }))
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 }

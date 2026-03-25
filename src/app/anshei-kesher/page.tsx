@@ -1,4 +1,5 @@
 import { getContacts } from '@/lib/airtable/contacts';
+import { getCampaigns } from '@/lib/airtable/campaigns';
 import { ContactsPageClient } from '@/components/contacts/ContactsPageClient';
 
 // Force dynamic: contacts change via webhook, always fetch fresh data
@@ -7,7 +8,18 @@ export const dynamic = 'force-dynamic';
 export default async function AnsheiKesherPage() {
   let contacts;
   try {
-    contacts = await getContacts();
+    const [rawContacts, campaigns] = await Promise.all([
+      getContacts(),
+      getCampaigns(),
+    ]);
+
+    const campaignNameMap: Record<string, string> = {};
+    for (const c of campaigns) campaignNameMap[c.id] = c.campaign_name;
+
+    contacts = rawContacts.map((c) => ({
+      ...c,
+      campaign_names: (c.campaign_ids ?? []).map((id) => campaignNameMap[id]).filter(Boolean),
+    }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return (
