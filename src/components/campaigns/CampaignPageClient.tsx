@@ -668,6 +668,7 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50">
                     <tr>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground w-10">#</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">שם מלא</th>
                       <th className="px-4 py-3 text-center font-medium text-muted-foreground">טלפון</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">אימייל</th>
@@ -678,6 +679,7 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
                   <tbody>
                     {enrolleeEntries.map((entry, idx) => (
                       <tr key={entry.enrollment_id} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
                         <td className="px-4 py-3">{entry.full_name}</td>
                         <td className="px-4 py-3 tabular-nums text-center" dir="ltr">
                           {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
@@ -727,6 +729,7 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50">
                     <tr>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground w-10">#</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">שם מלא</th>
                       <th className="px-4 py-3 text-center font-medium text-muted-foreground">טלפון</th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">אימייל</th>
@@ -735,6 +738,7 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
                   <tbody>
                     {interestedEntries.map((entry, idx) => (
                       <tr key={entry.id} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">{idx + 1}</td>
                         <td className="px-4 py-3">{entry.full_name}</td>
                         <td className="px-4 py-3 tabular-nums text-center" dir="ltr">
                           {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
