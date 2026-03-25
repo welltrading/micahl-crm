@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { getCampaigns, getInterestedCount, getEnrollmentCountsByCampaign, getInterestedCountsAllCampaigns } from "@/lib/airtable/campaigns";
 import { getGreenApiState } from "@/lib/airtable/green-api";
 import { getMessagesSentThisMonth, getMessageLogSentCountsByCampaign } from "@/lib/airtable/message-log";
@@ -157,6 +158,14 @@ export default async function Home() {
           })}
         </div>
       </div>
+
+      {/* Charts */}
+      <DashboardCharts
+        campaigns={campaigns}
+        interestedCountsMap={interestedCountsMap}
+        enrollmentCounts={enrollmentCounts}
+        sentCountsByCampaign={sentCountsByCampaign}
+      />
     </div>
   );
 }
