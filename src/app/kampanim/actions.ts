@@ -8,9 +8,9 @@ import {
   updateScheduledMessage,
   type SlotData,
 } from '@/lib/airtable/scheduled-messages';
-import type { Campaign, Contact, EnrolleeDisplayEntry, ScheduledMessage } from '@/lib/airtable/types';
+import type { Campaign, Contact, EnrolleeDisplayEntry, InterestedDisplayEntry, ScheduledMessage } from '@/lib/airtable/types';
 import { getEnrollmentsForCampaign } from '@/lib/airtable/scheduler-services';
-import { getContactById, getContacts, getEnrolledContactIds } from '@/lib/airtable/contacts';
+import { getContactById, getContacts, getEnrolledContactIds, getInterestedByCampaign } from '@/lib/airtable/contacts';
 import { sendWhatsAppMessage } from '@/lib/airtable/green-api';
 import { normalizePhone } from '@/lib/airtable/phone';
 
@@ -274,5 +274,18 @@ export async function removeEnrollmentAction(
   } catch (err) {
     console.error('removeEnrollmentAction error:', err);
     return { error: 'שגיאה בביטול הרישום. נסי שנית.' };
+  }
+}
+
+export async function getInterestedForCampaignAction(
+  campaignId: string
+): Promise<{ interested: InterestedDisplayEntry[] } | { error: string }> {
+  try {
+    if (!campaignId) return { error: 'campaignId is required' };
+    const interested = await getInterestedByCampaign(campaignId);
+    return { interested };
+  } catch (err) {
+    console.error('getInterestedForCampaignAction error:', err);
+    return { error: String(err) };
   }
 }

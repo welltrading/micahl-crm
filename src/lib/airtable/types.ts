@@ -46,6 +46,13 @@ export interface ScheduledMessage {
   sent_at?: string;
 }
 
+export interface InterestedDisplayEntry {
+  id: string;
+  full_name: string;
+  phone: string;
+  email?: string;
+}
+
 export interface EnrolleeDisplayEntry {
   enrollment_id: string;
   full_name: string;

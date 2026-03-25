@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import type { Campaign, ScheduledMessage, EnrolleeDisplayEntry } from '@/lib/airtable/types';
+import type { Campaign, ScheduledMessage, EnrolleeDisplayEntry, InterestedDisplayEntry } from '@/lib/airtable/types';
 import type { SlotData } from '@/lib/airtable/scheduled-messages';
 import {
   getCampaignMessagesAction,
@@ -13,6 +13,7 @@ import {
   getCampaignLogAction,
   getEnrolleesAction,
   removeEnrollmentAction,
+  getInterestedForCampaignAction,
   type BroadcastTarget,
 } from '@/app/kampanim/actions';
 import { israelDateTimeToUTC, formatSendPreview } from '@/lib/timezone-client';
@@ -108,7 +109,7 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
   const [broadcastError, setBroadcastError] = React.useState<string | null>(null);
 
   // Tab state
-  const [activeTab, setActiveTab] = React.useState<'messages' | 'log' | 'enrollees'>('enrollees');
+  const [activeTab, setActiveTab] = React.useState<'messages' | 'log' | 'enrollees' | 'interested'>('enrollees');
 
   // Log state
   const [logEntries, setLogEntries] = React.useState<MessageLogDisplayEntry[] | null>(null);
@@ -121,6 +122,11 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
   const [enrolleesLoading, setEnrolleesLoading] = React.useState(false);
   const [enrolleesError, setEnrolleesError] = React.useState<string | null>(null);
   const [removingId, setRemovingId] = React.useState<string | null>(null);
+
+  // Interested state
+  const [interestedEntries, setInterestedEntries] = React.useState<InterestedDisplayEntry[] | null>(null);
+  const [interestedLoading, setInterestedLoading] = React.useState(false);
+  const [interestedError, setInterestedError] = React.useState<string | null>(null);
 
   // Delete state
   const [deleting, setDeleting] = React.useState(false);
@@ -165,6 +171,20 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
     });
     return () => { cancelled = true; };
   }, [activeTab, campaign.id, logEntries]);
+
+  // Lazy-load interested
+  React.useEffect(() => {
+    if (activeTab !== 'interested' || interestedEntries !== null) return;
+    let cancelled = false;
+    setInterestedLoading(true);
+    getInterestedForCampaignAction(campaign.id).then((result) => {
+      if (cancelled) return;
+      setInterestedLoading(false);
+      if ('error' in result) { setInterestedError(result.error); return; }
+      setInterestedEntries(result.interested);
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, campaign.id, interestedEntries]);
 
   // Lazy-load enrollees
   React.useEffect(() => {
@@ -314,9 +334,10 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
         <div className="border-b flex gap-0">
           {(
             [
-              { id: 'enrollees', label: 'נרשמות' },
-              { id: 'messages',  label: 'הודעות' },
-              { id: 'log',       label: 'יומן שליחות' },
+              { id: 'enrollees',  label: 'נרשמות' },
+              { id: 'interested', label: 'מתעניינות' },
+              { id: 'messages',   label: 'הודעות' },
+              { id: 'log',        label: 'יומן שליחות' },
             ] as { id: typeof activeTab; label: string }[]
           ).map(({ id, label }) => (
             <button
@@ -674,6 +695,51 @@ export function CampaignPageClient({ campaign, enrollmentCount, allInterestedCou
                             {removingId === entry.enrollment_id ? 'מבטל...' : 'בטל רישום'}
                           </button>
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Interested tab ────────────────────────────────────────────── */}
+        {activeTab === 'interested' && (
+          <div className="flex flex-col gap-4">
+            {interestedLoading && (
+              <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+                טוענת מתעניינות...
+              </div>
+            )}
+            {interestedError && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {interestedError}
+              </div>
+            )}
+            {!interestedLoading && !interestedError && interestedEntries !== null && interestedEntries.length === 0 && (
+              <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+                אין מתעניינות לקמפיין זה
+              </div>
+            )}
+            {!interestedLoading && !interestedError && interestedEntries && interestedEntries.length > 0 && (
+              <div className="rounded-xl border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">שם מלא</th>
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">טלפון</th>
+                      <th className="px-4 py-3 text-right font-medium text-muted-foreground">אימייל</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {interestedEntries.map((entry, idx) => (
+                      <tr key={entry.id} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        <td className="px-4 py-3">{entry.full_name}</td>
+                        <td className="px-4 py-3 tabular-nums text-center" dir="ltr">
+                          {entry.phone ? formatPhoneDisplay(entry.phone) : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{entry.email ?? '—'}</td>
                       </tr>
                     ))}
                   </tbody>

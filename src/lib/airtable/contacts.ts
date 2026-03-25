@@ -1,5 +1,5 @@
 import { airtableBase } from './client';
-import type { Contact, CampaignEnrollment, ScheduledMessage } from './types';
+import type { Contact, CampaignEnrollment, ScheduledMessage, InterestedDisplayEntry } from './types';
 import { normalizePhone } from './phone';
 
 // Airtable field names are Hebrew (as set up in Plan 02 schema)
@@ -135,6 +135,25 @@ export async function getEnrolledContactIds(): Promise<string[]> {
     }
   }
   return Array.from(ids);
+}
+
+/**
+ * Returns all מתעניינות linked to a specific campaign.
+ */
+export async function getInterestedByCampaign(campaignId: string): Promise<InterestedDisplayEntry[]> {
+  const records = await airtableBase('מתעניינות')
+    .select({
+      filterByFormula: `FIND("${campaignId}", ARRAYJOIN({קמפיין}))`,
+      fields: ['שם מלא', 'טלפון', 'כתובת מייל'],
+    })
+    .all();
+
+  return records.map((r) => ({
+    id: r.id,
+    full_name: (r.fields['שם מלא'] as string) ?? '',
+    phone: (r.fields['טלפון'] as string) ?? '',
+    email: r.fields['כתובת מייל'] as string | undefined,
+  }));
 }
 
 // --- Private helpers ---
