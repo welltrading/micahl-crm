@@ -80,3 +80,47 @@ export async function getMessageLogByCampaign(
 
   return mapped.sort((a, b) => b.logged_at.localeCompare(a.logged_at));
 }
+
+/**
+ * Count MessageLog records with status 'נשלחה' created during the current calendar month (UTC boundaries).
+ */
+export async function getMessagesSentThisMonth(): Promise<number> {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth();
+  const firstOfMonth = new Date(Date.UTC(year, month, 1)).toISOString();
+  const firstOfNext = new Date(Date.UTC(year, month + 1, 1)).toISOString();
+
+  const records = await airtableBase('יומן הודעות')
+    .select({
+      filterByFormula: `AND({סטטוס} = 'נשלחה', IS_AFTER(CREATED_TIME(), '${firstOfMonth}'), IS_BEFORE(CREATED_TIME(), '${firstOfNext}'))`,
+      fields: ['סטטוס'],
+    })
+    .all();
+
+  return records.length;
+}
+
+/**
+ * Count sent messages per campaign (single Airtable call, client-side aggregation).
+ * Returns Record<campaignId, sentCount>. Returns {} when no sent records exist.
+ */
+export async function getMessageLogSentCountsByCampaign(): Promise<Record<string, number>> {
+  const records = await airtableBase('יומן הודעות')
+    .select({
+      filterByFormula: `{סטטוס} = 'נשלחה'`,
+      fields: ['קמפיין'],
+    })
+    .all();
+
+  const counts: Record<string, number> = {};
+  for (const r of records) {
+    const campaignIds = r.fields['קמפיין'] as string[] | undefined;
+    if (campaignIds) {
+      for (const id of campaignIds) {
+        counts[id] = (counts[id] ?? 0) + 1;
+      }
+    }
+  }
+  return counts;
+}

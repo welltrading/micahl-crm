@@ -312,6 +312,46 @@ describe('getEnrolleesForCampaign', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// getInterestedCountsAllCampaigns
+// ---------------------------------------------------------------------------
+import { getInterestedCountsAllCampaigns } from '../campaigns';
+
+describe('getInterestedCountsAllCampaigns', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns correct counts per campaign from מתעניינות table', async () => {
+    mockAll.mockResolvedValueOnce([
+      { id: 'recInt1', fields: { 'קמפיין': ['recCamp1'] } },
+      { id: 'recInt2', fields: { 'קמפיין': ['recCamp1'] } },
+      { id: 'recInt3', fields: { 'קמפיין': ['recCamp2'] } },
+    ]);
+    const result = await getInterestedCountsAllCampaigns();
+    expect(result['recCamp1']).toBe(2);
+    expect(result['recCamp2']).toBe(1);
+  });
+
+  it('returns empty object on Airtable error (graceful degradation)', async () => {
+    mockAll.mockRejectedValueOnce(new Error('Airtable error'));
+    const result = await getInterestedCountsAllCampaigns();
+    expect(result).toEqual({});
+  });
+
+  it('calls airtableBase with מתעניינות table', async () => {
+    mockAll.mockResolvedValueOnce([]);
+    await getInterestedCountsAllCampaigns();
+    expect(mockTable).toHaveBeenCalledWith('מתעניינות');
+  });
+
+  it('returns empty object when no interested records', async () => {
+    mockAll.mockResolvedValueOnce([]);
+    const result = await getInterestedCountsAllCampaigns();
+    expect(result).toEqual({});
+  });
+});
+
 describe('deleteEnrollment', () => {
   beforeEach(() => {
     jest.clearAllMocks();

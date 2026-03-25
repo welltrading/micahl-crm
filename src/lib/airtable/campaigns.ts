@@ -144,6 +144,31 @@ export async function deleteEnrollment(enrollmentId: string): Promise<void> {
   await airtableBase('נרשמות').destroy(enrollmentId);
 }
 
+/**
+ * Count interested records per campaign (single Airtable call, client-side aggregation).
+ * Returns Record<campaignId, count>. Returns {} on error for graceful dashboard degradation.
+ */
+export async function getInterestedCountsAllCampaigns(): Promise<Record<string, number>> {
+  try {
+    const records = await airtableBase('מתעניינות')
+      .select({ fields: ['קמפיין'] })
+      .all();
+
+    const counts: Record<string, number> = {};
+    for (const r of records) {
+      const campaignIds = r.fields['קמפיין'] as string[] | undefined;
+      if (campaignIds) {
+        for (const id of campaignIds) {
+          counts[id] = (counts[id] ?? 0) + 1;
+        }
+      }
+    }
+    return counts;
+  } catch {
+    return {};
+  }
+}
+
 export async function getEnrollmentCountsByCampaign(): Promise<Record<string, number>> {
   const records = await airtableBase('נרשמות')
     .select({ fields: ['קמפיין'] })

@@ -165,6 +165,93 @@ describe('mapErrorToHebrew', () => {
 });
 
 // ---------------------------------------------------------------------------
+// getMessagesSentThisMonth
+// ---------------------------------------------------------------------------
+import { getMessagesSentThisMonth, getMessageLogSentCountsByCampaign } from '../message-log';
+
+describe('getMessagesSentThisMonth', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTable.mockImplementation(() => ({ select: mockSelect, create: mockCreate }));
+    mockSelect.mockImplementation(() => ({ all: mockAll }));
+  });
+
+  it('returns count of sent records this month', async () => {
+    mockAll.mockResolvedValue([
+      { id: 'recA', fields: { 'סטטוס': 'נשלחה' } },
+      { id: 'recB', fields: { 'סטטוס': 'נשלחה' } },
+    ]);
+    const result = await getMessagesSentThisMonth();
+    expect(result).toBe(2);
+  });
+
+  it('returns 0 when no records match', async () => {
+    mockAll.mockResolvedValue([]);
+    const result = await getMessagesSentThisMonth();
+    expect(result).toBe(0);
+  });
+
+  it('calls airtableBase with יומן הודעות table', async () => {
+    mockAll.mockResolvedValue([]);
+    await getMessagesSentThisMonth();
+    expect(mockTable).toHaveBeenCalledWith('יומן הודעות');
+  });
+
+  it('uses IS_AFTER/IS_BEFORE with current month boundaries in filterByFormula', async () => {
+    mockAll.mockResolvedValue([]);
+    await getMessagesSentThisMonth();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectCall = (mockSelect.mock.calls as any[][])[0]?.[0] as { filterByFormula: string } | undefined;
+    expect(selectCall?.filterByFormula).toContain('IS_AFTER');
+    expect(selectCall?.filterByFormula).toContain('IS_BEFORE');
+    expect(selectCall?.filterByFormula).toContain('נשלחה');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getMessageLogSentCountsByCampaign
+// ---------------------------------------------------------------------------
+describe('getMessageLogSentCountsByCampaign', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTable.mockImplementation(() => ({ select: mockSelect, create: mockCreate }));
+    mockSelect.mockImplementation(() => ({ all: mockAll }));
+  });
+
+  it('returns correct aggregated counts per campaign', async () => {
+    mockAll.mockResolvedValue([
+      { id: 'recA', fields: { 'סטטוס': 'נשלחה', 'קמפיין': ['recCamp1', 'recCamp2'] } },
+      { id: 'recB', fields: { 'סטטוס': 'נשלחה', 'קמפיין': ['recCamp1'] } },
+    ]);
+    const result = await getMessageLogSentCountsByCampaign();
+    expect(result['recCamp1']).toBe(2);
+    expect(result['recCamp2']).toBe(1);
+  });
+
+  it('returns empty object when no sent records exist', async () => {
+    mockAll.mockResolvedValue([]);
+    const result = await getMessageLogSentCountsByCampaign();
+    expect(result).toEqual({});
+  });
+
+  it('filters by {סטטוס} = נשלחה', async () => {
+    mockAll.mockResolvedValue([]);
+    await getMessageLogSentCountsByCampaign();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectCall = (mockSelect.mock.calls as any[][])[0]?.[0] as { filterByFormula: string } | undefined;
+    expect(selectCall?.filterByFormula).toContain('נשלחה');
+  });
+
+  it('handles records with no קמפיין field gracefully', async () => {
+    mockAll.mockResolvedValue([
+      { id: 'recA', fields: { 'סטטוס': 'נשלחה' } },
+    ]);
+    const result = await getMessageLogSentCountsByCampaign();
+    expect(result).toEqual({});
+  });
+});
+
+// ---------------------------------------------------------------------------
 // getCampaignLogAction — mock getMessageLogByCampaign via jest.spyOn
 // ---------------------------------------------------------------------------
 describe('getCampaignLogAction', () => {
