@@ -126,34 +126,6 @@ export async function deleteCampaignAction(
   }
 }
 
-export async function updateMessageTimeAction(
-  recordId: string,
-  send_date: string,   // YYYY-MM-DD Israel local
-  send_time: string,   // HH:MM Israel local
-): Promise<{ ok: true } | { error: string }> {
-  try {
-    if (!recordId) return { error: 'recordId is required' };
-    if (!send_date) return { error: 'send_date is required' };
-    if (!send_time) return { error: 'send_time is required' };
-
-    // Validate date format YYYY-MM-DD
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(send_date)) {
-      return { error: 'send_date must be YYYY-MM-DD' };
-    }
-    // Validate time format HH:MM
-    if (!/^\d{2}:\d{2}$/.test(send_time)) {
-      return { error: 'send_time must be HH:MM' };
-    }
-
-    // updateScheduledMessage writes שליחה בשעה (UTC) when both date+time provided
-    await updateScheduledMessage(recordId, { send_date, send_time });
-    return { ok: true };
-  } catch (err) {
-    console.error('updateMessageTimeAction error:', err);
-    return { error: 'שגיאה בעדכון זמן ההודעה. נסי שנית.' };
-  }
-}
-
 export type BroadcastTarget =
   | 'enrolled_campaign'
   | 'interested_campaign'
