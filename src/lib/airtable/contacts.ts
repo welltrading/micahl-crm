@@ -13,7 +13,7 @@ export async function getContacts(): Promise<Contact[]> {
   return records
     .map((r) => ({
       id: r.id,
-      first_name: (r.fields['שם פרטי'] as string) ?? '',
+      first_name: (r.fields['שם'] as string) ?? '',
       last_name: (r.fields['שם משפחה'] as string) ?? '',
       full_name: (r.fields['שם מלא'] as string) ?? '',
       email: r.fields['כתובת מייל'] as string | undefined,
@@ -31,7 +31,7 @@ export async function getContactById(id: string): Promise<Contact | null> {
     const record = await airtableBase('מתעניינות').find(id);
     return {
       id: record.id,
-      first_name: (record.fields['שם פרטי'] as string) ?? '',
+      first_name: (record.fields['שם'] as string) ?? '',
       last_name: (record.fields['שם משפחה'] as string) ?? '',
       full_name: (record.fields['שם מלא'] as string) ?? '',
       email: record.fields['כתובת מייל'] as string | undefined,
@@ -61,12 +61,12 @@ export async function createContact(input: {
 
   const record = await airtableBase('מתעניינות').create(
     {
-      'שם פרטי': input.first_name,
+      'שם': input.first_name,
       'שם משפחה': input.last_name,
       'טלפון': normalizePhone(input.phone),
       'תאריך הצטרפות': today,
       ...(input.email ? { 'כתובת מייל': input.email } : {}),
-      ...(input.whatsapp_consent !== undefined ? { 'אישרה וואטסאפ': input.whatsapp_consent } : {}),
+      ...(input.whatsapp_consent ? { 'אישרה וואטסאפ': 'אישרה' } : {}),
     },
     { typecast: true }
   );
@@ -86,7 +86,7 @@ export async function findContactByPhone(phone: string): Promise<Contact | null>
   const r = records[0];
   return {
     id: r.id,
-    first_name: (r.fields['שם פרטי'] as string) ?? '',
+    first_name: (r.fields['שם'] as string) ?? '',
     last_name: (r.fields['שם משפחה'] as string) ?? '',
     full_name: (r.fields['שם מלא'] as string) ?? '',
     email: r.fields['כתובת מייל'] as string | undefined,
@@ -103,14 +103,16 @@ export async function findContactByPhone(phone: string): Promise<Contact | null>
  * for this contact+campaign combination.
  */
 export async function createEnrollment(contactId: string, campaignId: string): Promise<void> {
-  // Dedup: skip if already enrolled
-  const existing = await airtableBase('נרשמות')
-    .select({
-      filterByFormula: `AND(FIND("${contactId}", ARRAYJOIN({איש קשר})), FIND("${campaignId}", ARRAYJOIN({קמפיין})))`,
-      maxRecords: 1,
-    })
+  // Dedup: filterByFormula can't match linked record IDs — fetch and check in JS
+  const records = await airtableBase('נרשמות')
+    .select({ fields: ['איש קשר', 'קמפיין'] })
     .all();
-  if (existing.length > 0) return;
+  const alreadyEnrolled = records.some((r) => {
+    const contacts = (r.fields['איש קשר'] as string[] | undefined) ?? [];
+    const campaigns = (r.fields['קמפיין'] as string[] | undefined) ?? [];
+    return contacts.includes(contactId) && campaigns.includes(campaignId);
+  });
+  if (alreadyEnrolled) return;
 
   const today = new Date().toISOString().split('T')[0];
   await airtableBase('נרשמות').create(
