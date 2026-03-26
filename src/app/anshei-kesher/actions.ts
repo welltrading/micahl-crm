@@ -9,14 +9,18 @@ export async function addContact(
   lastName: string,
   phone: string,
   email?: string,
+  whatsappConsent?: boolean,
 ): Promise<{ success: true } | { error: string }> {
   if (!firstName?.trim()) return { error: 'שם פרטי נדרש' };
   if (!lastName?.trim()) return { error: 'שם משפחה נדרש' };
   const normalized = normalizePhone(phone);
   const existing = await getContacts();
-  const duplicate = existing.find((c) => normalizePhone(c.phone) === normalized);
+  const duplicate = existing.find((c) => {
+    try { return c.phone && normalizePhone(c.phone) === normalized; }
+    catch { return false; }
+  });
   if (duplicate) return { error: 'המספר כבר קיים במערכת' };
-  await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined });
+  await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent });
   revalidatePath('/anshei-kesher');
   return { success: true };
 }

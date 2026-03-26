@@ -18,6 +18,7 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
   const [lastName, setLastName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [email, setEmail] = React.useState('');
+  const [whatsappConsent, setWhatsappConsent] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -28,6 +29,7 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
       setLastName('');
       setPhone('');
       setEmail('');
+      setWhatsappConsent(false);
       setError(null);
       setIsSubmitting(false);
     }
@@ -39,7 +41,7 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await addContact(firstName, lastName, phone, email || undefined);
+      const result = await addContact(firstName, lastName, phone, email || undefined, whatsappConsent);
       if ('error' in result) {
         setError(result.error);
         setIsSubmitting(false);
@@ -134,6 +136,20 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
                   className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
                   disabled={isSubmitting}
                 />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="whatsappConsent"
+                  type="checkbox"
+                  checked={whatsappConsent}
+                  onChange={(e) => setWhatsappConsent(e.target.checked)}
+                  disabled={isSubmitting}
+                  className="h-4 w-4 rounded border-input accent-foreground cursor-pointer"
+                />
+                <label htmlFor="whatsappConsent" className="text-sm cursor-pointer">
+                  אישרה קבלת הודעות וואטסאפ
+                </label>
               </div>
 
               {error && (
