@@ -113,7 +113,7 @@ export async function getEnrolleesForCampaign(
       full_name: (r.fields['שם מלא'] as string) ?? '',
       phone: (r.fields['טלפון'] as string) ?? '',
       email: r.fields['כתובת מייל'] as string | undefined,
-      whatsapp_confirmed: r.fields['אישרה וואטסאפ'] as boolean | undefined,
+      whatsapp_confirmed: r.fields['אישרה וואטסאפ'] === 'אישרה',
     }));
 }
 

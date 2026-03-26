@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { getContactDetail } from '@/app/anshei-kesher/actions';
+import { removeEnrollmentAction } from '@/app/kampanim/actions';
 import { formatPhoneDisplay } from '@/lib/airtable/phone';
 
 interface ContactDetailPanelProps {
@@ -44,6 +45,7 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
   } | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [campaignMap, setCampaignMap] = React.useState<Record<string, { name: string; date: string }>>({});
+  const [removingId, setRemovingId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!contact) {
@@ -115,11 +117,28 @@ export function ContactDetailPanel({ contact, onClose }: ContactDetailPanelProps
                     );
                     return (
                       <div key={enrollment.id} className="flex flex-col gap-2">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          {campaignMap[campaignId]
-                            ? campaignMap[campaignId].name + ' — ' + formatDate(campaignMap[campaignId].date)
-                            : campaignId}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {campaignMap[campaignId]
+                              ? campaignMap[campaignId].name + ' — ' + formatDate(campaignMap[campaignId].date)
+                              : campaignId}
+                          </p>
+                          <button
+                            className="text-xs text-destructive hover:underline disabled:opacity-40"
+                            disabled={removingId === enrollment.id}
+                            onClick={async () => {
+                              setRemovingId(enrollment.id);
+                              await removeEnrollmentAction(enrollment.id);
+                              setDetail((prev) => prev ? {
+                                ...prev,
+                                enrollments: prev.enrollments.filter((e) => e.id !== enrollment.id),
+                              } : prev);
+                              setRemovingId(null);
+                            }}
+                          >
+                            {removingId === enrollment.id ? 'מבטל...' : 'בטל רישום'}
+                          </button>
+                        </div>
                         {campaignMessages.length === 0 ? (
                           <p className="text-sm text-muted-foreground ps-2">אין הודעות מתוזמנות</p>
                         ) : (
