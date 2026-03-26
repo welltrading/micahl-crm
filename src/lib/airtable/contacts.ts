@@ -56,6 +56,7 @@ export async function createContact(input: {
   phone: string;
   email?: string;
   whatsapp_consent?: boolean;
+  campaign_id?: string;
 }): Promise<{ success: true }> {
   const today = new Date().toISOString().split('T')[0];
 
@@ -67,6 +68,7 @@ export async function createContact(input: {
       'תאריך הצטרפות': today,
       ...(input.email ? { 'כתובת מייל': input.email } : {}),
       ...(input.whatsapp_consent !== undefined ? { 'אישרה וואטסאפ': input.whatsapp_consent } : {}),
+      ...(input.campaign_id ? { 'קמפיין': [input.campaign_id] } : {}),
     },
     { typecast: true }
   );

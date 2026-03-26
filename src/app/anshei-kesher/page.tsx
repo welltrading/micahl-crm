@@ -7,12 +7,14 @@ export const dynamic = 'force-dynamic';
 
 export default async function AnsheiKesherPage() {
   let contacts;
+  let campaigns: import('@/lib/airtable/types').Campaign[] = [];
   try {
-    const [rawContacts, campaigns] = await Promise.all([
+    const [rawContacts, fetchedCampaigns] = await Promise.all([
       getContacts(),
       getCampaigns(),
     ]);
 
+    campaigns = fetchedCampaigns;
     const campaignNameMap: Record<string, string> = {};
     for (const c of campaigns) campaignNameMap[c.id] = c.campaign_name;
 
@@ -29,5 +31,5 @@ export default async function AnsheiKesherPage() {
     );
   }
 
-  return <ContactsPageClient contacts={contacts} />;
+  return <ContactsPageClient contacts={contacts} campaigns={campaigns} />;
 }

@@ -10,6 +10,7 @@ export async function addContact(
   phone: string,
   email?: string,
   whatsappConsent?: boolean,
+  campaignId?: string,
 ): Promise<{ success: true } | { error: string }> {
   if (!firstName?.trim()) return { error: 'שם פרטי נדרש' };
   if (!lastName?.trim()) return { error: 'שם משפחה נדרש' };
@@ -20,7 +21,7 @@ export async function addContact(
     catch { return false; }
   });
   if (duplicate) return { error: 'המספר כבר קיים במערכת' };
-  await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent });
+  await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent, campaign_id: campaignId });
   revalidatePath('/anshei-kesher');
   return { success: true };
 }

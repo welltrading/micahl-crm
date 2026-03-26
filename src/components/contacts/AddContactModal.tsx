@@ -6,19 +6,22 @@ import { useRouter } from 'next/navigation';
 import { addContact } from '@/app/anshei-kesher/actions';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { Campaign } from '@/lib/airtable/types';
 
 interface AddContactModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  campaigns?: Campaign[];
 }
 
-export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
+export function AddContactModal({ open, onOpenChange, campaigns = [] }: AddContactModalProps) {
   const router = useRouter();
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [whatsappConsent, setWhatsappConsent] = React.useState(false);
+  const [campaignId, setCampaignId] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -30,6 +33,7 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
       setPhone('');
       setEmail('');
       setWhatsappConsent(false);
+      setCampaignId('');
       setError(null);
       setIsSubmitting(false);
     }
@@ -41,7 +45,7 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await addContact(firstName, lastName, phone, email || undefined, whatsappConsent);
+      const result = await addContact(firstName, lastName, phone, email || undefined, whatsappConsent, campaignId || undefined);
       if ('error' in result) {
         setError(result.error);
         setIsSubmitting(false);
@@ -136,6 +140,24 @@ export function AddContactModal({ open, onOpenChange }: AddContactModalProps) {
                   className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
                   disabled={isSubmitting}
                 />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="campaign" className="text-sm font-medium">
+                  קמפיין <span className="text-muted-foreground font-normal">(אופציונלי)</span>
+                </label>
+                <select
+                  id="campaign"
+                  value={campaignId}
+                  onChange={(e) => setCampaignId(e.target.value)}
+                  disabled={isSubmitting}
+                  className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
+                >
+                  <option value="">ללא קמפיין</option>
+                  {campaigns.map((c) => (
+                    <option key={c.id} value={c.id}>{c.campaign_name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex items-center gap-2">

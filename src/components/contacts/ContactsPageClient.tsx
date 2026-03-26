@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Contact } from '@/lib/airtable/types';
+import type { Contact, Campaign } from '@/lib/airtable/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ContactsTable } from './ContactsTable';
@@ -10,6 +10,7 @@ import { ContactDetailPanel } from './ContactDetailPanel';
 
 interface ContactsPageClientProps {
   contacts: Contact[];
+  campaigns: Campaign[];
 }
 
 function isThisMonth(dateStr: string): boolean {
@@ -62,7 +63,7 @@ function formatMonthLabel(key: string): string {
   return new Date(year, month - 1, 1).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
 }
 
-export function ContactsPageClient({ contacts }: ContactsPageClientProps) {
+export function ContactsPageClient({ contacts, campaigns }: ContactsPageClientProps) {
   const [search, setSearch] = React.useState('');
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
@@ -196,7 +197,7 @@ export function ContactsPageClient({ contacts }: ContactsPageClientProps) {
       <ContactsTable contacts={filtered} onContactClick={setSelectedContact} />
 
       {/* Add contact modal */}
-      <AddContactModal open={addModalOpen} onOpenChange={setAddModalOpen} />
+      <AddContactModal open={addModalOpen} onOpenChange={setAddModalOpen} campaigns={campaigns} />
 
       {/* Contact detail panel */}
       <ContactDetailPanel contact={selectedContact} onClose={() => setSelectedContact(null)} />
