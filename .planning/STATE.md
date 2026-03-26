@@ -175,8 +175,14 @@ None yet.
 - GREEN API instance warm-up period for new instances is unconfirmed — verify with support before first production campaign
 - Rav Messer CSV column names unknown — Phase 2 import handler may need a column-mapping step; confirm format before planning Phase 2
 
+## Quick Tasks Completed
+
+| Slug | Description | Date | Commits | Files |
+|------|-------------|------|---------|-------|
+| quick-001 | הוספת Pie + Bar גרפים לדאשבורד | 2026-03-26 | 2434a4f, 92cc05a | DashboardCharts.tsx, page.tsx |
+
 ## Session Continuity
 
-Last session: 2026-03-25T17:36:58.661Z
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-03-26T00:00:00.000Z
+Stopped at: Completed quick-001-dashboard-charts
 Resume file: None
