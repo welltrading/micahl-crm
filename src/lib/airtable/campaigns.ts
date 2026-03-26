@@ -29,6 +29,7 @@ export async function getCampaigns(): Promise<Campaign[]> {
     event_time: r.fields['שעת האירוע'] as string | undefined,
     description: r.fields['תיאור'] as string | undefined,
     status: deriveCampaignStatus(r.fields['תאריך אירוע'] as string),
+    campaign_type: r.fields['סוג קמפיין'] === 'בתשלום' ? 'paid' : 'free',
     created_at: r._rawJson.createdTime as string,
     welcome_message_title: r.fields['כותרת ברוכה הבאה'] as string | undefined,
     welcome_message: r.fields['הודעת ברוכה הבאה'] as string | undefined,
@@ -45,6 +46,7 @@ export async function getCampaignById(id: string): Promise<Campaign | null> {
       event_time: record.fields['שעת האירוע'] as string | undefined,
       description: record.fields['תיאור'] as string | undefined,
       status: deriveCampaignStatus(record.fields['תאריך אירוע'] as string),
+      campaign_type: record.fields['סוג קמפיין'] === 'בתשלום' ? 'paid' : 'free',
       created_at: record._rawJson.createdTime as string,
       welcome_message_title: record.fields['כותרת ברוכה הבאה'] as string | undefined,
       welcome_message: record.fields['הודעת ברוכה הבאה'] as string | undefined,
@@ -59,12 +61,14 @@ export async function createCampaign(params: {
   event_date: string;
   event_time?: string;
   description?: string;
+  campaign_type: 'free' | 'paid';
 }): Promise<Campaign> {
   const record = await airtableBase('קמפיין').create({
     'שם קמפיין': params.campaign_name,
     'תאריך אירוע': params.event_date,
     ...(params.event_time !== undefined ? { 'שעת האירוע': params.event_time } : {}),
     'תיאור': params.description ?? '',
+    'סוג קמפיין': params.campaign_type === 'paid' ? 'בתשלום' : 'חינמי',
   });
 
   return {
@@ -74,7 +78,8 @@ export async function createCampaign(params: {
     event_time: record.fields['שעת האירוע'] as string | undefined,
     description: record.fields['תיאור'] as string | undefined,
     status: deriveCampaignStatus(record.fields['תאריך אירוע'] as string),
-    created_at: record.fields['נוצר בתאריך'] as string,
+    campaign_type: record.fields['סוג קמפיין'] === 'בתשלום' ? 'paid' : 'free',
+    created_at: record._rawJson.createdTime as string,
   };
 }
 

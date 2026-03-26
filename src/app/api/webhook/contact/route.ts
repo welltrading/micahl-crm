@@ -13,7 +13,7 @@
  *   "last_name":  "string (required)",
  *   "phone":      "string (required)",
  *   "email":      "string (optional)",
- *   "campaign":   "string (optional, Airtable campaign record ID if enrolling)"
+ *   "campaign":   "string (optional, Airtable campaign record ID)"
  * }
  *
  * Legacy fallback (full_name split on first space):
@@ -22,17 +22,15 @@
  *   "phone":     "string (required)"
  * }
  *
- * Airtable Contacts fields:
- *   'שם פרטי'         — first name
- *   'שם משפחה'        — last name
- *   'שם מלא'          — formula: {שם פרטי}&" "&{שם משפחה} (read-only)
- *   'טלפון'           — phone (stored as 972XXXXXXXXXX normalized)
- *   'כתובת מייל'      — email (optional)
- *   'תאריך הצטרפות'   — join date (YYYY-MM-DD)
+ * Logic:
+ *   - Contact always created in מתעניינות
+ *   - If campaign provided AND campaign is free (חינמי) → also create enrollment in נרשמות
+ *   - If campaign is paid (בתשלום) → only מתעניינות (Make handles enrollment after payment)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableBase } from '@/lib/airtable/client';
+import { createContact, createEnrollment } from '@/lib/airtable/contacts';
+import { getCampaignById } from '@/lib/airtable/campaigns';
 import { normalizePhone } from '@/lib/airtable/phone';
 
 export async function POST(req: NextRequest) {
@@ -57,11 +55,9 @@ export async function POST(req: NextRequest) {
   let lastName: string;
 
   if (body.first_name && typeof body.first_name === 'string' && body.first_name.trim()) {
-    // Preferred: explicit first_name + last_name
     firstName = body.first_name.trim();
     lastName = typeof body.last_name === 'string' ? body.last_name.trim() : '';
   } else if (body.full_name && typeof body.full_name === 'string' && body.full_name.trim()) {
-    // Legacy fallback: split full_name on first space
     const parts = body.full_name.trim().split(/\s+/);
     firstName = parts[0];
     lastName = parts.slice(1).join(' ');
@@ -76,16 +72,22 @@ export async function POST(req: NextRequest) {
   // --- Normalize phone ---
   const normalizedPhone = normalizePhone(phone);
 
-  // --- Write to Airtable ---
-  const today = new Date().toISOString().split('T')[0];
-
-  await airtableBase('מתעניינות').create({
-    'שם פרטי': firstName,
-    'שם משפחה': lastName,
-    'טלפון': normalizedPhone,
-    'תאריך הצטרפות': today,
-    ...(email && typeof email === 'string' && email.trim() ? { 'כתובת מייל': email.trim() } : {}),
+  // --- Create contact in מתעניינות ---
+  const { id: contactId } = await createContact({
+    first_name: firstName,
+    last_name: lastName,
+    phone: normalizedPhone,
+    email: email && typeof email === 'string' && email.trim() ? email.trim() : undefined,
   });
+
+  // --- Auto-enroll if campaign is free ---
+  const campaignId = body.campaign && typeof body.campaign === 'string' ? body.campaign.trim() : null;
+  if (campaignId) {
+    const campaign = await getCampaignById(campaignId);
+    if (campaign && campaign.campaign_type === 'free') {
+      await createEnrollment(contactId, campaignId);
+    }
+  }
 
   return NextResponse.json({ success: true }, { status: 201 });
 }

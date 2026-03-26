@@ -22,6 +22,7 @@ export async function createCampaignAction(
     const event_date = (formData.get('event_date') as string | null)?.trim() ?? '';
     const event_time = (formData.get('event_time') as string | null)?.trim() ?? '';
     const description = (formData.get('description') as string | null)?.trim() || undefined;
+    const campaign_type = formData.get('campaign_type') === 'paid' ? 'paid' : 'free';
 
     if (!campaign_name) {
       return { error: 'שם קמפיין הוא שדה חובה' };
@@ -38,6 +39,7 @@ export async function createCampaignAction(
       event_date,
       event_time,
       description,
+      campaign_type,
     });
 
     return { campaign };

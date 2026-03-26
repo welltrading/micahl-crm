@@ -128,6 +128,24 @@ export function CreateCampaignModal({
                 </select>
               </div>
 
+              {/* סוג קמפיין */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="campaign_type" className="text-sm font-medium">
+                  סוג קמפיין
+                </label>
+                <select
+                  id="campaign_type"
+                  name="campaign_type"
+                  required
+                  defaultValue="free"
+                  className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 focus:border-ring disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  <option value="free">חינמי</option>
+                  <option value="paid">בתשלום</option>
+                </select>
+              </div>
+
               {/* תיאור (optional) */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="description" className="text-sm font-medium">

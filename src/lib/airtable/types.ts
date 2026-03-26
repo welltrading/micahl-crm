@@ -5,6 +5,7 @@ export interface Campaign {
   event_time?: string; // HH:MM format, Israel local time (e.g. "19:00")
   description?: string;
   status: 'future' | 'active' | 'ended';
+  campaign_type: 'free' | 'paid'; // חינמי = free, בתשלום = paid
   created_at: string;
   enrollment_count?: number;
   welcome_message_title?: string;
