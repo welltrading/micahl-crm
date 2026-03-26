@@ -29,7 +29,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createContact, createEnrollment } from '@/lib/airtable/contacts';
+import { createContact, findContactByPhone, createEnrollment } from '@/lib/airtable/contacts';
 import { getCampaignById } from '@/lib/airtable/campaigns';
 import { normalizePhone } from '@/lib/airtable/phone';
 
@@ -72,13 +72,21 @@ export async function POST(req: NextRequest) {
   // --- Normalize phone ---
   const normalizedPhone = normalizePhone(phone);
 
-  // --- Create contact in מתעניינות ---
-  const { id: contactId } = await createContact({
-    first_name: firstName,
-    last_name: lastName,
-    phone: normalizedPhone,
-    email: email && typeof email === 'string' && email.trim() ? email.trim() : undefined,
-  });
+  // --- Upsert contact in מתעניינות ---
+  // If contact already exists (same phone), reuse their ID — no duplicate created
+  const existing = await findContactByPhone(normalizedPhone);
+  let contactId: string;
+  if (existing) {
+    contactId = existing.id;
+  } else {
+    const created = await createContact({
+      first_name: firstName,
+      last_name: lastName,
+      phone: normalizedPhone,
+      email: email && typeof email === 'string' && email.trim() ? email.trim() : undefined,
+    });
+    contactId = created.id;
+  }
 
   // --- Auto-enroll if campaign is free ---
   const campaignId = body.campaign && typeof body.campaign === 'string' ? body.campaign.trim() : null;

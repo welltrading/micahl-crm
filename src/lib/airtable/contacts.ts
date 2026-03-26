@@ -74,7 +74,44 @@ export async function createContact(input: {
   return { success: true, id: record.id };
 }
 
+/**
+ * Finds a contact by normalized phone number. Returns null if not found.
+ */
+export async function findContactByPhone(phone: string): Promise<Contact | null> {
+  const normalized = normalizePhone(phone);
+  const records = await airtableBase('מתעניינות')
+    .select({ filterByFormula: `{טלפון} = "${normalized}"`, maxRecords: 1 })
+    .all();
+  if (!records.length) return null;
+  const r = records[0];
+  return {
+    id: r.id,
+    first_name: (r.fields['שם פרטי'] as string) ?? '',
+    last_name: (r.fields['שם משפחה'] as string) ?? '',
+    full_name: (r.fields['שם מלא'] as string) ?? '',
+    email: r.fields['כתובת מייל'] as string | undefined,
+    phone: r.fields['טלפון'] as string,
+    joined_date: r.fields['תאריך הצטרפות'] as string | undefined,
+    notes: r.fields['הערות'] as string | undefined,
+    created_at: r._rawJson.createdTime as string,
+    campaign_ids: (r.fields['קמפיין'] as string[] | undefined) ?? [],
+  };
+}
+
+/**
+ * Creates an enrollment in נרשמות, skipping if one already exists
+ * for this contact+campaign combination.
+ */
 export async function createEnrollment(contactId: string, campaignId: string): Promise<void> {
+  // Dedup: skip if already enrolled
+  const existing = await airtableBase('נרשמות')
+    .select({
+      filterByFormula: `AND(FIND("${contactId}", ARRAYJOIN({איש קשר})), FIND("${campaignId}", ARRAYJOIN({קמפיין})))`,
+      maxRecords: 1,
+    })
+    .all();
+  if (existing.length > 0) return;
+
   const today = new Date().toISOString().split('T')[0];
   await airtableBase('נרשמות').create(
     {

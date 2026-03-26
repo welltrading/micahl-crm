@@ -20,8 +20,23 @@ export async function addContact(
     try { return c.phone && normalizePhone(c.phone) === normalized; }
     catch { return false; }
   });
-  if (duplicate) return { error: 'המספר כבר קיים במערכת' };
-  const { id: contactId } = await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent });
+
+  let contactId: string;
+  if (duplicate) {
+    // Contact already exists — if free campaign selected, just enroll (no duplicate contact)
+    if (campaignId) {
+      const campaign = await getCampaignById(campaignId);
+      if (campaign?.campaign_type === 'free') {
+        await createEnrollment(duplicate.id, campaignId);
+        revalidatePath('/anshei-kesher');
+        return { success: true };
+      }
+    }
+    return { error: 'המספר כבר קיים במערכת' };
+  }
+
+  const created = await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent });
+  contactId = created.id;
   if (campaignId) {
     const campaign = await getCampaignById(campaignId);
     if (campaign?.campaign_type === 'free') await createEnrollment(contactId, campaignId);
