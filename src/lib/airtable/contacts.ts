@@ -56,11 +56,10 @@ export async function createContact(input: {
   phone: string;
   email?: string;
   whatsapp_consent?: boolean;
-  campaign_id?: string;
-}): Promise<{ success: true }> {
+}): Promise<{ success: true; id: string }> {
   const today = new Date().toISOString().split('T')[0];
 
-  await airtableBase('מתעניינות').create(
+  const record = await airtableBase('מתעניינות').create(
     {
       'שם פרטי': input.first_name,
       'שם משפחה': input.last_name,
@@ -68,12 +67,24 @@ export async function createContact(input: {
       'תאריך הצטרפות': today,
       ...(input.email ? { 'כתובת מייל': input.email } : {}),
       ...(input.whatsapp_consent !== undefined ? { 'אישרה וואטסאפ': input.whatsapp_consent } : {}),
-      ...(input.campaign_id ? { 'קמפיין': [input.campaign_id] } : {}),
     },
     { typecast: true }
   );
 
-  return { success: true };
+  return { success: true, id: record.id };
+}
+
+export async function createEnrollment(contactId: string, campaignId: string): Promise<void> {
+  const today = new Date().toISOString().split('T')[0];
+  await airtableBase('נרשמות').create(
+    {
+      'איש קשר': [contactId],
+      'קמפיין': [campaignId],
+      'תאריך רישום': today,
+      'מקור': 'manual',
+    },
+    { typecast: true }
+  );
 }
 
 /**

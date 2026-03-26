@@ -1,6 +1,6 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { getContacts, createContact, getContactEnrollments, getContactMessages } from '@/lib/airtable/contacts';
+import { getContacts, createContact, createEnrollment, getContactEnrollments, getContactMessages } from '@/lib/airtable/contacts';
 import { normalizePhone } from '@/lib/airtable/phone';
 import { getCampaigns } from '@/lib/airtable/campaigns';
 
@@ -21,7 +21,8 @@ export async function addContact(
     catch { return false; }
   });
   if (duplicate) return { error: 'המספר כבר קיים במערכת' };
-  await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent, campaign_id: campaignId });
+  const { id: contactId } = await createContact({ first_name: firstName.trim(), last_name: lastName.trim(), phone: normalized, email: email?.trim() || undefined, whatsapp_consent: whatsappConsent });
+  if (campaignId) await createEnrollment(contactId, campaignId);
   revalidatePath('/anshei-kesher');
   return { success: true };
 }
